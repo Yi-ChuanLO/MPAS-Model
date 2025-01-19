@@ -143,16 +143,14 @@
 
 !local pointers:
  integer,dimension(:),pointer:: kpbl
- real(kind=RKIND),pointer:: len_disp
- real(kind=RKIND),dimension(:),pointer  :: meshDensity
+ real(kind=RKIND),dimension(:),pointer  :: dx
  real(kind=RKIND),dimension(:),pointer  :: oa1,oa2,oa3,oa4,ol1,ol2,ol3,ol4,con,var2d
  real(kind=RKIND),dimension(:),pointer  :: dusfcg,dvsfcg
  real(kind=RKIND),dimension(:,:),pointer:: dtaux3d,dtauy3d,rublten,rvblten
 
 !-----------------------------------------------------------------------------------------------------------------
 
- call mpas_pool_get_config(configs,'config_len_disp',len_disp)
- call mpas_pool_get_array(mesh,'meshDensity',meshDensity)
+ call mpas_pool_get_array(mesh,'dx',dx)
 
  call mpas_pool_get_array(sfc_input,'oa1'  ,oa1  )
  call mpas_pool_get_array(sfc_input,'oa2'  ,oa2  )
@@ -194,7 +192,7 @@
 
  do j = jts,jte
  do i = its,ite
-    dx_p(i,j) = len_disp / meshDensity(i)**0.25
+    dx_p(i,j) = dx(i)
     kpbl_p(i,j)   = kpbl(i)
     dusfcg_p(i,j) = dusfcg(i)
     dvsfcg_p(i,j) = dvsfcg(i)

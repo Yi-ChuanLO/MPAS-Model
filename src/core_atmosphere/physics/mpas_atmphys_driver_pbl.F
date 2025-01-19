@@ -330,8 +330,7 @@
  real(kind=RKIND),dimension(:,:),pointer:: rthratenlw,rthratensw
 
 !local pointers for MYNN scheme:
- real(kind=RKIND),pointer:: len_disp
- real(kind=RKIND),dimension(:),pointer  :: meshDensity
+ real(kind=RKIND),dimension(:),pointer  :: dx
  real(kind=RKIND),dimension(:),pointer  :: ch,qsfc,rmol,skintemp
  real(kind=RKIND),dimension(:,:),pointer:: cov,qke,qsq,tsq,sh3d,sm3d,tke_pbl,qke_adv,el_pbl
  real(kind=RKIND),dimension(:,:),pointer:: cldfrac_bl,qc_bl,qi_bl
@@ -417,8 +416,7 @@
        enddo
 
     case("bl_mynn")
-       call mpas_pool_get_config(configs,'config_len_disp',len_disp)
-       call mpas_pool_get_array(mesh,'meshDensity',meshDensity)
+       call mpas_pool_get_array(mesh,'dx',dx)
 
        call mpas_pool_get_array(sfc_input,'skintemp',skintemp)
        call mpas_pool_get_array(diag_physics,'ch'        ,ch        )
@@ -449,7 +447,7 @@
 
        do j = jts,jte
        do i = its,ite
-          dx_p(i,j)   = len_disp / meshDensity(i)**0.25
+          dx_p(i,j)   = dx(i)
           ch_p(i,j)   = ch(i)
           qsfc_p(i,j) = qsfc(i)
           rmol_p(i,j) = rmol(i)

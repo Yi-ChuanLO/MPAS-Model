@@ -1357,6 +1357,9 @@
                 <var name="meshDensity" type="real" dimensions="nCells" units="unitless"
                      description="Mesh density function (used when generating the mesh) evaluated at a cell"/>
 
+                <var name="dx" type="real" dimensions="nCells" units="m"
+                     description="Approximated horizontal resolution evaluated at a cell"/>
+
                 <var name="nominalMinDc" type="real" dimensions="" units="m"
                      description="Nominal minimum dcEdge value where meshDensity == 1.0"/>
 

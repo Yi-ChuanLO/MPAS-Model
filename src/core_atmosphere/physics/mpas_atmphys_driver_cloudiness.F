@@ -106,22 +106,19 @@
 !local variables and pointers:
  integer:: i,j,k
 
- real(kind=RKIND),pointer:: len_disp
- real(kind=RKIND),dimension(:),pointer:: areaCell,meshDensity
+ real(kind=RKIND),dimension(:),pointer:: areaCell,dx
  real(kind=RKIND),dimension(:),pointer:: xland
 
 !-----------------------------------------------------------------------------------------------------------------
 
- call mpas_pool_get_config(configs,'config_len_disp',len_disp)
-
  call mpas_pool_get_array(mesh,'areaCell'   ,areaCell   )
- call mpas_pool_get_array(mesh,'meshDensity',meshDensity)
+ call mpas_pool_get_array(mesh,'dx',dx)
 
  call mpas_pool_get_array(sfc_input,'xland',xland)
 
  do j = jts,jte
     do i = its,ite
-       dx_p(i,j)    = len_disp / meshDensity(i)**0.25
+       dx_p(i,j)    = dx(i)
        !conversion of dx_p from meters to kilometers.
        dx_p(i,j)    = dx_p(i,j)*0.001
        xland_p(i,j) = xland(i)

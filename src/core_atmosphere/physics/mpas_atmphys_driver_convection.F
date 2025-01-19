@@ -429,7 +429,6 @@
  logical,pointer:: config_do_restart
  integer,pointer:: gfconv_closure_deep,gfconv_closure_shallow
  character(len=StrKIND),pointer:: convection_scheme
- real(kind=RKIND),pointer:: len_disp
 
 !variables specific to Kain_Fritsch parameterization:
  logical:: warm_rain,adapt_step_flag
@@ -452,7 +451,6 @@
 
  call mpas_pool_get_config(configs,'config_gfconv_closure_deep',gfconv_closure_deep)
  call mpas_pool_get_config(configs,'config_gfconv_closure_shallow',gfconv_closure_shallow)
- call mpas_pool_get_config(configs,'config_len_disp'         ,len_disp         )
  call mpas_pool_get_config(configs,'config_do_restart'       ,config_do_restart)
  call mpas_pool_get_config(configs,'config_convection_scheme',convection_scheme)
 
@@ -637,7 +635,7 @@
 !local pointers:
  character(len=StrKIND),pointer:: convection_scheme
  integer,dimension(:),pointer:: kpbl,k22_shallow,kbcon_shallow,ktop_shallow,ktop_deep
- real(kind=RKIND),dimension(:),pointer  :: areaCell,meshDensity
+ real(kind=RKIND),dimension(:),pointer  :: areaCell,dx
  real(kind=RKIND),dimension(:),pointer  :: nca,cubot,cutop,cuprec,raincv
  real(kind=RKIND),dimension(:),pointer  :: gsw,hfx,qfx,xland
  real(kind=RKIND),dimension(:),pointer  :: xmb_total,xmb_shallow
@@ -651,7 +649,6 @@
 !local variables:
  integer:: i,j,k
  integer:: iEdge
- real(kind=RKIND),pointer:: len_disp
 
 !-----------------------------------------------------------------------------------------------------------------
 
@@ -681,10 +678,8 @@
  convection_select: select case(convection_scheme)
 
     case ("cu_grell_freitas")
-       call mpas_pool_get_config(configs,'config_len_disp',len_disp)
-
        call mpas_pool_get_array(mesh,'areaCell'   ,areaCell   )
-       call mpas_pool_get_array(mesh,'meshDensity',meshDensity)
+       call mpas_pool_get_array(mesh,'dx'         ,dx         )
        call mpas_pool_get_array(mesh,'zgrid'      ,zgrid      )
 
        call mpas_pool_get_array(sfc_input,'xland',xland)
@@ -715,7 +710,7 @@
 
        do j = jts,jte
        do i = its,ite
-          dx_p(i,j) = len_disp / meshDensity(i)**0.25
+          dx_p(i,j)            = dx(i)
           area_p(i,j)          = areaCell(i)
           ht_p(i,j)            = zgrid(1,i)
           xland_p(i,j)         = xland(i)
@@ -750,10 +745,8 @@
        enddo
 
     case ("cu_kain_fritsch")
-       call mpas_pool_get_config(configs,'config_len_disp',len_disp)
-
        call mpas_pool_get_array(mesh,'areaCell',areaCell)
-       call mpas_pool_get_array(mesh,'meshDensity',meshDensity)
+       call mpas_pool_get_array(mesh,'dx', dx)
 
        call mpas_pool_get_array(diag_physics,'cubot'   ,cubot   )
        call mpas_pool_get_array(diag_physics,'cutop'   ,cutop   )
@@ -766,7 +759,7 @@
        do j = jts,jte
        do i = its,ite
           !area of grid-cell:       
-          dx_p(i,j)    = len_disp / meshDensity(i)**0.25
+          dx_p(i,j)    = dx(i)
           area_p(i,j)  = areaCell(i)
           cubot_p(i,j) = cubot(i)
           cutop_p(i,j) = cutop(i)
@@ -825,8 +818,7 @@
              enddo
  
           case("cu_ntiedtke")
-             call mpas_pool_get_config(configs,'config_len_disp',len_disp)
-             call mpas_pool_get_array(mesh,'meshDensity',meshDensity)
+             call mpas_pool_get_array(mesh,'dx',dx)
 
              call mpas_pool_get_array(tend_physics,'rqvdynten' ,rqvdynten )
              call mpas_pool_get_array(tend_physics,'rqvblten'  ,rqvblten  )
@@ -837,7 +829,7 @@
              
              do j = jts,jte
              do i = its,ite
-                dx_p(i,j) = len_disp / meshDensity(i)**0.25
+                dx_p(i,j) = dx(i)
              enddo
 
              do k = kts,kte

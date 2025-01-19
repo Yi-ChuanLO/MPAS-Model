@@ -398,12 +398,14 @@ module atm_core
 
       integer :: iCell,iEdge,iVertex
       
+      real (kind=RKIND), pointer :: config_len_disp
       real (kind=RKIND), dimension(:,:), pointer :: u, uReconstructX, uReconstructY, uReconstructZ, uReconstructZonal, uReconstructMeridional
       real (kind=RKIND), dimension(:), pointer :: meshScalingDel2, meshScalingDel4
       real (kind=RKIND), dimension(:), pointer :: areaCell, invAreaCell
       real (kind=RKIND), dimension(:), pointer :: dvEdge, invDvEdge
       real (kind=RKIND), dimension(:), pointer :: dcEdge, invDcEdge
       real (kind=RKIND), dimension(:), pointer :: areaTriangle, invAreaTriangle
+      real (kind=RKIND), dimension(:), pointer :: meshDensity , dx
       integer, pointer :: nCells, nEdges, nVertices, nVertLevels, nEdgesSolve
       integer :: thread
       character(len=StrKIND), pointer :: mminlu
@@ -426,12 +428,13 @@ module atm_core
 
       call mpas_pool_get_subpool(block % structs, 'state', state)
 
+      call mpas_pool_get_config(block % configs, 'config_len_disp', config_len_disp)
       call mpas_pool_get_config(block % configs, 'config_do_restart', config_do_restart)
       call mpas_pool_get_config(block % configs, 'config_do_DAcycling', config_do_DAcycling)
 
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       !!!! Compute inverses to avoid divides later
-      
+
       call mpas_pool_get_array(mesh, 'areaCell', areaCell)
       call mpas_pool_get_array(mesh, 'invAreaCell', invAreaCell)
       
@@ -464,6 +467,19 @@ module atm_core
       end do
       
       !!!!! End compute inverses
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      !!!! Compute horizontal resolution at cell
+
+      call mpas_pool_get_array(mesh, 'meshDensity', meshDensity)
+      call mpas_pool_get_array(mesh, 'dx', dx)
+ 
+      do iCell=1,nCells 
+         dx(iCell) = config_len_disp / meshDensity(iCell) ** 0.25
+      end do
+
+      !!!!! End compute horizontal resolution at cell
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       call atm_adv_coef_compression(mesh)

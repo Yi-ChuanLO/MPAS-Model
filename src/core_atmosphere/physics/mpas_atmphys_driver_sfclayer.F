@@ -367,8 +367,7 @@
  logical,pointer:: config_frac_seaice
  character(len=StrKIND),pointer:: sfclayer_scheme
 
- real(kind=RKIND),pointer:: len_disp
- real(kind=RKIND),dimension(:),pointer:: meshDensity
+ real(kind=RKIND),dimension(:),pointer:: dx
  real(kind=RKIND),dimension(:),pointer:: skintemp,sst,xice,xland
  real(kind=RKIND),dimension(:),pointer:: hpbl,mavail
  real(kind=RKIND),dimension(:),pointer:: br,cpm,chs,chs2,cqs2,flhc,flqc,gz1oz0,hfx,qfx,  &
@@ -386,8 +385,7 @@
 !input variables:
  call mpas_pool_get_config(configs,'config_frac_seaice'    ,config_frac_seaice)
  call mpas_pool_get_config(configs,'config_sfclayer_scheme',sfclayer_scheme   )
- call mpas_pool_get_config(configs,'config_len_disp'       ,len_disp          )
- call mpas_pool_get_array(mesh,'meshDensity',meshDensity)
+ call mpas_pool_get_array(mesh,'dx',dx)
 
  call mpas_pool_get_array(diag_physics,'hpbl'    ,hpbl    )
  call mpas_pool_get_array(diag_physics,'mavail'  ,mavail  )
@@ -422,7 +420,7 @@
  do j = jts,jte
  do i = its,ite
     !input variables:
-    dx_p(i,j)     = len_disp / meshDensity(i)**0.25
+    dx_p(i,j)     = dx(i)
     hpbl_p(i,j)   = hpbl(i)
     mavail_p(i,j) = mavail(i)
     tsk_p(i,j)    = skintemp(i)
