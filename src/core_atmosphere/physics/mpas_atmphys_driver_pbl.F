@@ -406,9 +406,7 @@
           ctopo_p(i,j)  = 1._RKIND
           ctopo2_p(i,j) = 1._RKIND
        enddo
-       enddo
 
-       do j = jts,jte
        do k = kts,kte
        do i = its,ite
           exch_p(i,k,j) = 0._RKIND
@@ -455,9 +453,7 @@
           rmol_p(i,j) = rmol(i)
           tsk_p(i,j)  = skintemp(i)
        enddo
-       enddo
 
-       do j = jts,jte
        do k = kts,kte
        do i = its,ite
           elpbl_p(i,k,j)    = el_pbl(k,i)
@@ -590,8 +586,8 @@
  enddo
 
  do j = jts,jte
- do k = kts,kte
  do i = its,ite
+ do k = kts,kte
     rublten(k,i)  = rublten_p(i,k,j)
     rvblten(k,i)  = rvblten_p(i,k,j)
     rthblten(k,i) = rthblten_p(i,k,j)
@@ -617,11 +613,9 @@
        do i = its,ite
           delta(i) = delta_p(i,j)
           wstar(i) = wstar_p(i,j)
-       enddo
-       do k = kts,kte
-       do i = its,ite
-          exch_h(k,i) = exch_p(i,k,j)
-       enddo
+          do k = kts,kte
+             exch_h(k,i) = exch_p(i,k,j)
+          enddo
        enddo
        enddo
 
@@ -657,8 +651,8 @@
        call mpas_pool_get_array(tend_physics,'rqsblten'  ,rqsblten  )
 
        do j = jts,jte
-       do k = kts,kte
        do i = its,ite
+       do k = kts,kte
           el_pbl(k,i)     = elpbl_p(i,k,j)
           cov(k,i)        = cov_p(i,k,j)
           qke(k,i)        = qke_p(i,k,j)
@@ -695,8 +689,8 @@
        if(f_ni) then
           call mpas_pool_get_array(tend_physics,'rniblten',rniblten)
           do j = jts,jte
-             do k = kts,kte
-                do i = its,ite
+             do i = its,ite
+                do k = kts,kte
                    rniblten(k,i) = rniblten_p(i,k,j)
                 enddo
              enddo
@@ -707,8 +701,8 @@
           call mpas_pool_get_array(tend_physics,'rnifablten',rnifablten)
           call mpas_pool_get_array(tend_physics,'rnwfablten',rnwfablten)
           do j = jts,jte
-             do k = kts,kte
-                do i = its,ite
+             do i = its,ite
+                do k = kts,kte
                    rncblten(k,i)   = rncblten_p(i,k,j)
                    rnifablten(k,i) = rnifablten_p(i,k,j)
                    rnwfablten(k,i) = rnwfablten_p(i,k,j)

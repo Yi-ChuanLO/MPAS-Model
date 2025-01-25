@@ -615,8 +615,8 @@
  call mpas_pool_get_dimension(state,'index_qv',index_qv)
  qv => scalars(index_qv,:,:)
 
- do i = its,ite
-    do k = kts,kte
+do k = kts,kte 
+    do i = its,ite   
        mpas_noahmp%dz8w(i,k)    = zgrid(k+1,i)-zgrid(k,i)
        mpas_noahmp%qv_curr(i,k) = qv(k,i)
        mpas_noahmp%t_phy(i,k)   = (theta_m(k,i)/(1.+R_v/R_d*qv(k,i)))*exner(k,i)
@@ -764,10 +764,8 @@
     lai(i)        = mpas_noahmp%lai(i)
     z0(i)         = mpas_noahmp%z0(i)
     znt(i)        = mpas_noahmp%znt(i)
- enddo
 
- do ns = 1,nsoil
-    do i = its,ite
+    do ns = 1,nsoil
        sh2o(ns,i)    = mpas_noahmp%sh2o(i,ns)
        smois(ns,i)   = mpas_noahmp%smois(i,ns)
        tslb(ns,i)    = mpas_noahmp%tslb(i,ns)
@@ -849,9 +847,6 @@
        tsnoxy(ns,i)  = mpas_noahmp%tsnoxy(i,n)
        snicexy(ns,i) = mpas_noahmp%snicexy(i,n)
        snliqxy(ns,i) = mpas_noahmp%snliqxy(i,n)
-    enddo
-    do ns = 1,nsnow
-       n = ns - nsnow
        zsnsoxy(ns,i) = mpas_noahmp%zsnsoxy(i,n)
     enddo
     do ns = nsnow+1,nzsnow

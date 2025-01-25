@@ -370,9 +370,7 @@
     tslb_p(i,n,j)   = tslb(n,i)
  enddo
  enddo
- enddo
 
- do j = jts,jte
  do i = its,ite
     acsnom_p(i,j)     = acsnom(i)
     acsnow_p(i,j)     = acsnow(i)
@@ -436,11 +434,6 @@
     ust_urb_p(i,j)    = 0._RKIND
     utype_urb_p(i,j)  = 0
 
- enddo
- enddo
-
- do j = jts,jte
- do i = its,ite
     sr_p(i,j)     = 0._RKIND
     rainbl_p(i,j) = 0._RKIND
  enddo
@@ -563,18 +556,14 @@
  call mpas_pool_get_array(sfc_input,'tslb'      ,tslb      )
 
  do j = jts,jte
- do n = 1,num_soils
  do i = its,ite
-    sh2o(n,i)   = sh2o_p(i,n,j)
-    smcrel(n,i) = smcrel_p(i,n,j)
-    smois(n,i)  = smois_p(i,n,j)
-    tslb(n,i)   = tslb_p(i,n,j)
- enddo
- enddo
- enddo
+    do n = 1,num_soils
+       sh2o(n,i)   = sh2o_p(i,n,j)
+       smcrel(n,i) = smcrel_p(i,n,j)
+       smois(n,i)  = smois_p(i,n,j)
+       tslb(n,i)   = tslb_p(i,n,j)
+    enddo
 
- do j = jts,jte
- do i = its,ite
     acsnom(i)     = acsnom_p(i,j)
     acsnow(i)     = acsnow_p(i,j)
     canwat(i)     = canwat_p(i,j)

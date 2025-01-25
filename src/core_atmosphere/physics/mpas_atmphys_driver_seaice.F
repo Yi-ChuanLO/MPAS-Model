@@ -210,6 +210,12 @@
  call mpas_pool_get_array(sfc_input,'xice'    ,xice    )
 
  do j = jts,jte
+    !--- inout variables:
+    do n = 1,num_soils
+    do i = its,ite
+       tslb_p(i,n,j) = tslb(n,i)
+    enddo
+    enddo
     do i = its,ite
        !--- in variables:
        xice_p(i,j)      = xice(i)
@@ -220,10 +226,6 @@
        chs_p(i,j)       = chs(i)
        swdown_p(i,j)    = gsw(i)/(1._RKIND-sfc_albedo(i))
 
-       !--- inout variables:
-       do n = 1,num_soils
-          tslb_p(i,n,j) = tslb(n,i)
-       enddo
        z0_p(i,j)        = z0(i)
        snow_p(i,j)      = snow(i)
        snowc_p(i,j)     = snowc(i)

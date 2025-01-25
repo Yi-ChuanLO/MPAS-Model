@@ -168,11 +168,12 @@
        i2 = i+1
     endif
 
-    do m = 1,num_months
-    do k = 1,levsiz
+    dlat     = lat_ozone(i2)-lat_ozone(i1)
+    dlatCell = lat-lat_ozone(i1)
+
     do j = 1,lonsiz
-       dlat     = lat_ozone(i2)-lat_ozone(i1)
-       dlatCell = lat-lat_ozone(i1)
+    do k = 1,levsiz
+    do m = 1,num_months
        if(dlat == 0.) then
           ozmixm(m,k,iCell) = ozmixin(j,k,i1,m)
        else
@@ -313,9 +314,9 @@
 !call mpas_log_write('fact1 =$r', realArgs=(/fact1/))
 !call mpas_log_write('fact2 =$r', realArgs=(/fact2/))
 
-!Time interpolation.
- do k = 1, nOznLevels
+!Time interpolation optimized for data locality.
  do iCell = 1, nCellsSolve
+ do k = 1, nOznLevels
     o3clim(k,iCell) = fact1 * ozmixm(nm,k,iCell) + fact2 * ozmixm(np,k,iCell)
  end do
 !call mpas_log_write('$i $r $r $r $r $r $r', intArgs=(/k/), realArgs=(/o3clim(k,1),ozmixm(nm,k,1),ozmixm(np,k,1), &

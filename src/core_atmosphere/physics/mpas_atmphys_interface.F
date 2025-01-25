@@ -724,8 +724,8 @@
        call mpas_pool_get_array(tend_physics,'rqsmpten',rqsmpten)
        call mpas_pool_get_array(tend_physics,'rqgmpten',rqgmpten)
 
-       do k = kts,kte
        do i = its,ite
+       do k = kts,kte
           rthmpten(k,i) = theta_m(k,i)/(1._RKIND+R_v/R_d*max(0._RKIND,qv(k,i)))
           rqvmpten(k,i) = qv(k,i)
           rqcmpten(k,i) = qc(k,i)
@@ -741,8 +741,8 @@
              call mpas_pool_get_array(tend_physics,'rnimpten',rnimpten)
              call mpas_pool_get_array(tend_physics,'rnrmpten',rnrmpten)
 
-             do k = kts,kte
              do i = its,ite
+             do k = kts,kte
                 rnimpten(k,i) = ni(k,i)
                 rnrmpten(k,i) = nr(k,i)
              enddo
@@ -754,8 +754,8 @@
                    call mpas_pool_get_array(tend_physics,'rnifampten',rnifampten)
                    call mpas_pool_get_array(tend_physics,'rnwfampten',rnwfampten)
 
-                   do k = kts,kte
                    do i = its,ite
+                   do k = kts,kte
                       rncmpten(k,i) = nc(k,i)
                       rnifampten(k,i) = nifa(k,i)
                       rnwfampten(k,i) = nwfa(k,i)
@@ -849,8 +849,8 @@
 
 !update variables needed in the dynamical core:
  do j = jts,jte
- do k = kts,kte
  do i = its,ite
+ do k = kts,kte
 
     !initializes tendency of coupled potential temperature potential temperature, and
     !potential temperature heating rate from microphysics:
@@ -916,8 +916,8 @@
        call mpas_pool_get_array(diag_physics,'re_snow' ,re_snow )
 
        do j = jts,jte
-       do k = kts,kte
        do i = its,ite
+       do k = kts,kte
           qi(k,i) = qi_p(i,k,j)
           qs(k,i) = qs_p(i,k,j)
           qg(k,i) = qg_p(i,k,j)
@@ -939,8 +939,8 @@
              nr   => scalars(index_nr,:,:)
 
              do j = jts,jte
-             do k = kts,kte
              do i = its,ite
+             do k = kts,kte
                 ni(k,i) = ni_p(i,k,j)
                 nr(k,i) = nr_p(i,k,j)
              enddo
@@ -962,13 +962,11 @@
                    do i = its,ite
                       nifa2d(i) = nifa2d_p(i,j)
                       nwfa2d(i) = nwfa2d_p(i,j)
-                   enddo
-                   do k = kts, kte
-                   do i = its, ite
-                      nc(k,i)   = nc_p(i,k,j)
-                      nifa(k,i) = nifa_p(i,k,j)
-                      nwfa(k,i) = nwfa_p(i,k,j)
-                   enddo
+                      do k = kts, kte
+                         nc(k,i)   = nc_p(i,k,j)
+                         nifa(k,i) = nifa_p(i,k,j)
+                         nwfa(k,i) = nwfa_p(i,k,j)
+                      enddo
                    enddo
                    enddo
 
@@ -992,8 +990,8 @@
        call mpas_pool_get_array(tend_physics,'rqsmpten',rqsmpten)
        call mpas_pool_get_array(tend_physics,'rqgmpten',rqgmpten)
 
-       do k = kts,kte
        do i = its,ite
+       do k = kts,kte
           rthmpten(k,i) = (theta_m(k,i)/(1._RKIND+R_v/R_d*max(0._RKIND,qv(k,i)))-rthmpten(k,i))/dt_dyn
           rqvmpten(k,i) = (qv(k,i)-rqvmpten(k,i))/dt_dyn
           rqcmpten(k,i) = (qc(k,i)-rqcmpten(k,i))/dt_dyn
@@ -1009,8 +1007,8 @@
              call mpas_pool_get_array(tend_physics,'rnimpten',rnimpten)
              call mpas_pool_get_array(tend_physics,'rnrmpten',rnrmpten)
 
-             do k = kts,kte
              do i = its,ite
+             do k = kts,kte
                 rnimpten(k,i) = (ni(k,i)-rnimpten(k,i))/dt_dyn
                 rnrmpten(k,i) = (nr(k,i)-rnrmpten(k,i))/dt_dyn
              enddo
@@ -1022,8 +1020,8 @@
                    call mpas_pool_get_array(tend_physics,'rnifampten',rnifampten)
                    call mpas_pool_get_array(tend_physics,'rnwfampten',rnwfampten)
 
-                   do k = kts,kte
                    do i = its,ite
+                   do k = kts,kte
                       rncmpten(k,i)   = (nc(k,i)-rncmpten(k,i))/dt_dyn
                       rnifampten(k,i) = (nifa(k,i)-rnifampten(k,i))/dt_dyn
                       rnwfampten(k,i) = (nwfa(k,i)-rnwfampten(k,i))/dt_dyn

@@ -608,27 +608,28 @@
 
 !variables common to all cloud microphysics schemes:
  do j = jts,jte
- do i = its,ite
-
+ 
     !precipitable water:
     do k = kts,kte
+    do i = its,ite
        rho_a = rho_p(i,k,j) / (1._RKIND + qv_p(i,k,j))
        precipw(i) = precipw(i) + qv_p(i,k,j) * rho_a * dz_p(i,k,j)
     enddo
+    enddo
 
-    !time-step precipitation:
-    rainncv(i) = rainnc_p(i,j)
+    do i = its,ite
+       !time-step precipitation:
+       rainncv(i) = rainnc_p(i,j)
 
-    !accumulated precipitation:
-    rainnc(i) = rainnc(i) + rainncv(i)
+       !accumulated precipitation:
+       rainnc(i) = rainnc(i) + rainncv(i)
 
-   if(l_acrain .and. config_bucket_rainnc.gt.0._RKIND .and. &
-      rainnc(i).gt.config_bucket_rainnc) then
-      i_rainnc(i) = i_rainnc(i) + 1
-      rainnc(i)   = rainnc(i) - config_bucket_rainnc
-   endif
-
- enddo
+       if(l_acrain .and. config_bucket_rainnc.gt.0._RKIND .and. &
+          rainnc(i).gt.config_bucket_rainnc) then
+          i_rainnc(i) = i_rainnc(i) + 1
+          rainnc(i)   = rainnc(i) - config_bucket_rainnc
+       endif
+    enddo
  enddo
 
 !variables specific to different cloud microphysics schemes:
@@ -812,8 +813,8 @@
 !-----------------------------------------------------------------------------------------------------------------
 
  call mpas_pool_get_array(diag,'relhum',relhum)
- do k = kts,kte
-    do i = its,ite
+ do i = its,ite
+    do k = kts,kte
        relhum(k,i) = 0._RKIND
     enddo
  enddo

@@ -162,8 +162,8 @@
  call mpas_pool_get_array(diag_physics,'cldfrac',cldfrac)
 
  do j = jts,jte
- do k = kts,kte
  do i = its,ite
+ do k = kts,kte
     cldfrac(k,i) = cldfrac_p(i,k,j)
  enddo
  enddo

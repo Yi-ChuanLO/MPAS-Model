@@ -1314,8 +1314,8 @@ module atm_time_integration
             rqvdynten(:,:) = 0._RKIND
          end if
 
-         do k = 1, nVertLevels
-            do iCell = 1, nCellsSolve
+         do iCell = 1, nCellsSolve
+            do k = 1, nVertLevels
                fac_m = 1._RKIND/(1._RKIND + rv/rgas*scalars_2(index_qv,k,iCell))
                theta_local = theta_m(k,iCell)*fac_m
                rthdynten(k,iCell) = fac_m*(rthdynten(k,iCell)-theta_local*rv/rgas*rqvdynten(k,iCell))
@@ -1706,9 +1706,7 @@ module atm_time_integration
       do iCell = cellStart,cellEnd
          qtot(1:nVertLevels,iCell) = 0.0
          do k = 1,nVertLevels
-            do iq = moist_start, moist_end
-               qtot(k,iCell) = qtot(k,iCell) + scalars(iq, k, iCell)
-            end do
+            qtot(k,iCell) = sum(scalars(moist_start:moist_end, k, iCell))
          end do
       end do    
 
@@ -1727,10 +1725,7 @@ module atm_time_integration
          cell2 = cellsOnEdge(2,iEdge)
          if (cell1 <= nCellsSolve .or. cell2 <= nCellsSolve) then
             do k = 1, nVertLevels
-               qtotal = 0.0
-               do iq = moist_start, moist_end
-                  qtotal = qtotal + 0.5 * ( scalars(iq, k, cell1) + scalars(iq, k, cell2) )
-               end do
+               qtotal = 0.5 * sum( scalars(moist_start:moist_end, k, cell1) + scalars(moist_start:moist_end, k, cell2) )
                cqu(k,iEdge) = 1.0 / (1.0 + qtotal)
             end do
          end if

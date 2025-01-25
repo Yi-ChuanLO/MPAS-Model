@@ -304,7 +304,9 @@
        mpas_noahmp%soilcl2(i) = soilcl2(i)
        mpas_noahmp%soilcl3(i) = soilcl3(i)
        mpas_noahmp%soilcl4(i) = soilcl4(i)
-       do ns = 1,nsoilcomps
+    enddo
+    do ns = 1,nsoilcomps
+       do i = its,ite
           mpas_noahmp%soilcomp(i,ns) = soilcomp(ns,i)
        enddo
     enddo
@@ -398,8 +400,10 @@
     mpas_noahmp%xland(i) = xland(i)
     mpas_noahmp%snow(i)  = snow(i)
     mpas_noahmp%snowh(i) = snowh(i)
+ enddo
 
-    do ns = 1,nsoil
+ do ns = 1,nsoil
+    do i = its,ite
        mpas_noahmp%sh2o(i,ns)  = sh2o(ns,i)
        mpas_noahmp%smois(i,ns) = smois(ns,i)
        mpas_noahmp%tslb(i,ns)  = tslb(ns,i)
@@ -417,28 +421,29 @@
     snowh(i)   = mpas_noahmp%snowh(i)  ! in m  (check unit in noahmp driver).
     snowc(i)   = 0._RKIND
     if(snow(i) .gt. 0._RKIND) snowc(i) = 1.
+ enddo
 
-    do ns = 1,nsoil
+ do ns = 1,nsoil
+   do i = its,ite
        mpas_noahmp%sh2o(i,ns)  = sh2o(ns,i)
        mpas_noahmp%smois(i,ns) = smois(ns,i)
        mpas_noahmp%tslb(i,ns)  = tslb(ns,i)
    enddo
  enddo
 
- do ns = 1,nsnow
-    n = ns - nsnow
-    do i = its,ite
-       tsnoxy(ns,i)  = mpas_noahmp%tsnoxy(i,n)
-       snicexy(ns,i) = mpas_noahmp%snicexy(i,n)
-       snliqxy(ns,i) = mpas_noahmp%snliqxy(i,n)
-       zsnsoxy(ns,i) = mpas_noahmp%zsnsoxy(i,n)
-    enddo
- enddo
- do ns = nsnow+1,nzsnow
-    n = ns - nsnow
-    do i = its,ite
-       zsnsoxy(ns,i) = mpas_noahmp%zsnsoxy(i,n)
-    enddo
+ do i = its, ite
+   do ns = 1, nsnow
+      n = ns - nsnow
+      tsnoxy(ns,i)  = mpas_noahmp%tsnoxy(i,n)
+      snicexy(ns,i) = mpas_noahmp%snicexy(i,n)
+      snliqxy(ns,i) = mpas_noahmp%snliqxy(i,n)
+      zsnsoxy(ns,i) = mpas_noahmp%zsnsoxy(i,n)
+   enddo
+
+   do ns = nsnow+1,nzsnow
+      n = ns - nsnow
+      zsnsoxy(ns,i) = mpas_noahmp%zsnsoxy(i,n)
+   enddo
  enddo
 
  do i = its,ite

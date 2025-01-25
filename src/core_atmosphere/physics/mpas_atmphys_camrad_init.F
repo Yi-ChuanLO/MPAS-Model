@@ -453,8 +453,8 @@
  call mpas_pool_get_array(state,'aerosols',aerosolcn,2)
 
 !initialization of aerosol levels:
- do k = 1, nAerLevels
  do iCell = 1, nCells
+ do k = 1, nAerLevels
     m_hybi(k,iCell) = hybi(k)
  enddo
  enddo
@@ -470,8 +470,8 @@
 !height below 900 mb:
  if(.not.allocated(mxaerl_local)) allocate(mxaerl_local(1:nCellsSolve))
  mxaerl_local(1:nCellsSolve) = 0
- do k = 1, nVertLevels
  do iCell = 1, nCellsSolve
+ do k = 1, nVertLevels
     if(pressure_b(k,iCell) .ge. 9.e04) mxaerl_local(iCell) = mxaerl_local(iCell) + 1
  enddo
  enddo 
@@ -707,9 +707,9 @@
 
  nbnd = nspint
 
- do krh = 1, nrh
-    rh = 1.0_r8 / nrh * (krh - 1)
-    do kbnd = 1, nbnd
+ do kbnd = 1, nbnd
+    do krh = 1, nrh
+       rh = 1.0_r8 / nrh * (krh - 1)
        ksul(krh,kbnd) = exp_interpol(rh_opac, &
                  ksul_opac(:,kbnd) / ksul_opac(1,kbnd),rh) * ksul_opac(1,kbnd)
        wsul(krh,kbnd) = lin_interpol(rh_opac, &
@@ -850,11 +850,12 @@
        i2 = i+1
     endif
 
-    do m = 1,num_months
-    do k = 1,levsiz
+    dlat     = lat_ozone(i2)-lat_ozone(i1)
+    dlatCell = lat-lat_ozone(i1)
+
     do j = 1,lonsiz
-       dlat     = lat_ozone(i2)-lat_ozone(i1)
-       dlatCell = lat-lat_ozone(i1)
+    do k = 1,levsiz
+    do m = 1,num_months
        if(dlat == 0.) then
           ozmixm(m,k,iCell) = ozmixin(j,k,i1,m)
        else

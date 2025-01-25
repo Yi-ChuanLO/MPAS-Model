@@ -427,26 +427,21 @@
     xice_p(i,j)       = xice(i)
     xland_p(i,j)      = xland(i)
  enddo
- enddo
- do j = jts,jte
+
  do k = kts,kte
  do i = its,ite
     cldfrac_p(i,k,j) = cldfrac(k,i)
  enddo
  enddo
- enddo
 
 !initialization:
- do j = jts,jte
  do k = kts,kte
  do i = its,ite
     f_ice(i,k,j)  = 0.0_RKIND
     f_rain(i,k,j) = 0.0_RKIND
  enddo
  enddo
- enddo
 
- do j = jts,jte
  do i = its,ite
     coszr_p(i,j)    = 0.0_RKIND
     gsw_p(i,j)      = 0.0_RKIND
@@ -550,12 +545,11 @@
 
              do j = jts,jte
              do i = its,ite
-                taod5502d_p(i,j) = 0._RKIND
-                do k = kts,kte
-                   taod5502d_p(i,j) = taod5502d_p(i,j) + taod5503d_p(i,k,j)
-                   taod5503d(k,i) = taod5503d_p(i,k,j)
-                enddo
-                taod5502d(i) = taod5502d_p(i,j)
+               taod5502d_p(i,j) = sum(taod5503d_p(i,kts:kte,j))
+               taod5502d(i) = taod5502d_p(i,j)
+               do k = kts,kte
+                  taod5503d(k,i) = taod5503d_p(i,k,j)
+               enddo
              enddo
              enddo
 
@@ -760,12 +754,10 @@
     swddir(i) = swddir_p(i,j)
     swddni(i) = swddni_p(i,j)
     swddif(i) = swddif_p(i,j)
- enddo
 
- do k = kts,kte
- do i = its,ite
-    rthratensw(k,i) = rthratensw_p(i,k,j)
- enddo
+    do k = kts,kte
+       rthratensw(k,i) = rthratensw_p(i,k,j)
+    enddo
  enddo
 
  enddo

@@ -199,9 +199,7 @@
     dusfcg_p(i,j) = dusfcg(i)
     dvsfcg_p(i,j) = dvsfcg(i)
  enddo
- enddo
 
- do j = jts,jte
  do k = kts,kte
  do i = its,ite
     dtaux3d_p(i,k,j) = dtaux3d(k,i)
@@ -247,19 +245,14 @@
  do i = its,ite
     dusfcg(i) = dusfcg_p(i,j) 
     dvsfcg(i) = dvsfcg_p(i,j)
- enddo
- enddo
-
- do j = jts,jte
- do k = kts,kte
- do i = its,ite
-    dtaux3d(k,i)  = dtaux3d_p(i,k,j)
-    dtauy3d(k,i)  = dtauy3d_p(i,k,j)
-    rubldiff(k,i) = rublten_p(i,k,j)-rublten(k,i)
-    rvbldiff(k,i) = rvblten_p(i,k,j)-rvblten(k,i) 
-    rublten(k,i)  = rublten_p(i,k,j)
-    rvblten(k,i)  = rvblten_p(i,k,j)
- enddo
+    do k = kts,kte
+       dtaux3d(k,i)  = dtaux3d_p(i,k,j)
+       dtauy3d(k,i)  = dtauy3d_p(i,k,j)
+       rubldiff(k,i) = rublten_p(i,k,j)-rublten(k,i)
+       rvbldiff(k,i) = rvblten_p(i,k,j)-rvblten(k,i) 
+       rublten(k,i)  = rublten_p(i,k,j)
+       rvblten(k,i)  = rvblten_p(i,k,j)
+    enddo
  enddo
  enddo
 

@@ -369,26 +369,21 @@
     xice_p(i,j)      = xice(i)
     xland_p(i,j)     = xland(i)
  enddo
- enddo
- do j = jts,jte
+
  do k = kts,kte
  do i = its,ite
     cldfrac_p(i,k,j) = cldfrac(k,i)
  enddo
  enddo
- enddo
 
 !initialization:
- do j = jts,jte
  do k = kts,kte
  do i = its,ite
     f_ice(i,k,j)  = 0.0_RKIND
     f_rain(i,k,j) = 0.0_RKIND
  enddo
  enddo
- enddo
 
- do j = jts,jte
  do i = its,ite
     glw_p(i,j)      = 0.0_RKIND
     lwcf_p(i,j)     = 0.0_RKIND
@@ -485,8 +480,8 @@
           if(.not.allocated(p2d) ) allocate(p2d(its:ite,kts:kte) )
           if(.not.allocated(o32d)) allocate(o32d(its:ite,kts:kte))
           do j = jts,jte
-             do i = its,ite
              do k = kts,kte
+             do i = its,ite
                 o32d(i,k) = 0._RKIND
                 p2d(i,k)  = pres_hyd_p(i,k,j) / 100._RKIND
              enddo
@@ -587,8 +582,8 @@
        do k = 1, num_aerlevels
           m_hybi_p(k) = m_hybi(k,1)
        enddo
-       do i = its,ite
        do j = jts,jte
+       do i = its,ite
           m_psp_p(i,j) = m_ps(i)
           m_psn_p(i,j) = m_ps(i)
        enddo
@@ -672,8 +667,8 @@
     olrtoa(i) = olrtoa_p(i,j)
  enddo
 
- do k = kts,kte
  do i = its,ite
+ do k = kts,kte
     rthratenlw(k,i) = rthratenlw_p(i,k,j)
  enddo
  enddo
@@ -690,8 +685,8 @@
              call mpas_pool_get_array(diag_physics,'rre_snow' ,rre_snow )
              if(config_microp_re) then
                 do j = jts,jte
-                do k = kts,kte
                 do i = its,ite
+                do k = kts,kte
                    rre_cloud(k,i) = rrecloud_p(i,k,j)
                    rre_ice(k,i)   = rreice_p(i,k,j)
                    rre_snow(k,i)  = rresnow_p(i,k,j)
@@ -700,8 +695,8 @@
                 enddo
              else
                 do j = jts,jte
-                do k = kts,kte
                 do i = its,ite
+                do k = kts,kte
                    rre_cloud(k,i) = 0._RKIND
                    rre_ice(k,i)   = 0._RKIND
                    rre_snow(k,i)  = 0._RKIND
@@ -741,22 +736,20 @@
 
 !call mpas_log_write('--- writing absnxt,abstot,and emstot to restart = $l', logicArgs=(/l_camlw/))
  do j = jts,jte
+ do i = its,ite
  do n = 1,cam_abs_dim1
  do k = kts,kte
- do i = its,ite
     absnxt(k,n,i) = absnxt_p(i,k,n,j)
  enddo
  enddo
- enddo
+
  do n = 1,cam_abs_dim2
  do k = kts,kte+1
- do i = its,ite
     abstot(k,n,i) = abstot_p(i,k,n,j)
  enddo
  enddo
- enddo
+
  do k = kts,kte+1
- do i = its,ite
     emstot(k,i) = emstot_p(i,k,j)
  enddo
  enddo
