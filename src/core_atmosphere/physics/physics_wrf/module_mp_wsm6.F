@@ -111,18 +111,18 @@
 
  do j = jts,jte
 
-    do i = its,ite
+    !inout arguments:
+    do i = its,ite 
+       rain_hv(i) = rain(i,j)
+    end do
+
+    do k = kts,kte
        !input arguments:
-       do k = kts,kte
+       do i = its,ite       
           den_hv(i,k)  = den(i,k,j)
           p_hv(i,k)    = p(i,k,j)
           delz_hv(i,k) = delz(i,k,j)
-       enddo
 
-       !inout arguments:
-       rain_hv(i) = rain(i,j)
-
-       do k = kts,kte
           t_hv(i,k)  = th(i,k,j)*pii(i,k,j)
           qv_hv(i,k) = q(i,k,j)
           qc_hv(i,k) = qc(i,k,j)
@@ -162,8 +162,10 @@
        rain(i,j)    = rain_hv(i)
        rainncv(i,j) = rainncv_hv(i)
        sr(i,j)      = sr_hv(i)
+    enddo
 
-       do k = kts,kte
+    do k = kts,kte
+       do i = its,ite
           th(i,k,j) = t_hv(i,k)/pii(i,k,j)
           q(i,k,j)  = qv_hv(i,k)
           qc(i,k,j) = qc_hv(i,k)

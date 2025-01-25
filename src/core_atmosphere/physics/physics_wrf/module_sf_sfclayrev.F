@@ -147,6 +147,17 @@
 
  do j = jts,jte
 
+    do k = kts,kte
+       do i = its,ite
+          dz_hv(i,k) = dz8w(i,k,j)
+          u_hv(i,k)  = u3d(i,k,j)
+          v_hv(i,k)  = v3d(i,k,j)
+          qv_hv(i,k) = qv3d(i,k,j)
+          p_hv(i,k)  = p3d(i,k,j)
+          t_hv(i,k)  = t3d(i,k,j)
+       enddo
+    enddo   
+
     do i = its,ite
        !input arguments:
        dx_hv(i) = dx(i,j)
@@ -157,15 +168,6 @@
        xland_hv(i)       = xland(i,j)
        lakemask_hv(i)    = lakemask(i,j)
        water_depth_hv(i) = water_depth(i,j)
-
-       do k = kts,kte
-          dz_hv(i,k) = dz8w(i,k,j)
-          u_hv(i,k)  = u3d(i,k,j)
-          v_hv(i,k)  = v3d(i,k,j)
-          qv_hv(i,k) = qv3d(i,k,j)
-          p_hv(i,k)  = p3d(i,k,j)
-          t_hv(i,k)  = t3d(i,k,j)
-       enddo
 
        !inout arguments:
        regime_hv(i) = regime(i,j)

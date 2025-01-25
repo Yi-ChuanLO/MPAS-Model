@@ -106,46 +106,46 @@
  kts = 1
 
 !---
- do i = its,ite
-    do k = kts,kte
-       sq = qv(i,k)/(1.+qv(i,k))      !conversion of qv at time-step n from mixing ratio to specific humidity.
-       sqv(i,k) = sq + dqv(i,k)*delt  !calculation of specific humidity at time-step n+1.
-       rq = sqv(i,k)/(1.-sqv(i,k))    !conversion of qv at time-step n+1 from specific humidity to mixing ratio.
-       dqv(i,k) = (rq - qv(i,k))/delt !calculation of the tendency.
-    enddo
- enddo
+ do k = kts, kte
+   do i = its, ite
+      sq = qv(i,k)/(1.+qv(i,k))      !conversion of qv at time-step n from mixing ratio to specific humidity.
+      sqv(i,k) = sq + dqv(i,k)*delt  !calculation of specific humidity at time-step n+1.
+      rq = sqv(i,k)/(1.-sqv(i,k))    !conversion of qv at time-step n+1 from specific humidity to mixing ratio.
+      dqv(i,k) = (rq - qv(i,k))/delt !calculation of the tendency.
+   end do
+ end do
 
  if(f_qc) then
-    do i = its,ite
-       do k = kts,kte
-          sq = qc(i,k)/(1.+qv(i,k))
-          sqc(i,k) = sq + dqc(i,k)*delt
-          rq  = sqc(i,k)*(1.+sqv(i,k))
-          dqc(i,k) = (rq - qc(i,k))/delt
-       enddo
-    enddo
+   do k = kts, kte
+      do i = its, ite
+        sq = qc(i,k)/(1.+qv(i,k))
+        sqc(i,k) = sq + dqc(i,k)*delt
+        rq  = sqc(i,k)*(1.+sqv(i,k))
+        dqc(i,k) = (rq - qc(i,k))/delt
+      end do
+   end do
  endif
 
  if(f_qi) then
-    do i = its,ite
-       do k = kts,kte
-          sq = qi(i,k)/(1.+qv(i,k))
-          sqi(i,k) = sq + dqi(i,k)*delt
-          rq = sqi(i,k)*(1.+sqv(i,k))
-          dqi(i,k) = (rq - qi(i,k))/delt
-       enddo
-    enddo
+   do k = kts, kte
+      do i = its, ite
+        sq = qi(i,k)/(1.+qv(i,k))
+        sqi(i,k) = sq + dqi(i,k)*delt
+        rq = sqi(i,k)*(1.+sqv(i,k))
+        dqi(i,k) = (rq - qi(i,k))/delt
+      end do
+   end do
  endif
 
  if(f_qs) then
-    do i = its,ite
-       do k = kts,kte
-          sq = qs(i,k)/(1.+qv(i,k))
-          sqs(i,k) = sq + dqs(i,k)*delt
-          rq = sqs(i,k)*(1.+sqv(i,k))
-          dqs(i,k) = (rq - qs(i,k))/delt
-       enddo
-    enddo
+   do k = kts, kte
+      do i = its, ite
+        sq = qs(i,k)/(1.+qv(i,k))
+        sqs(i,k) = sq + dqs(i,k)*delt
+        rq = sqs(i,k)*(1.+sqv(i,k))
+        dqs(i,k) = (rq - qs(i,k))/delt
+      end do
+   end do
  endif
 
 !--- output error flag and message:
