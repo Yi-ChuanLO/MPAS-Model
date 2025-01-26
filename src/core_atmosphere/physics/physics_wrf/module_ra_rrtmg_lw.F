@@ -3185,23 +3185,23 @@ use module_wrf_error
          totuclfl(lay) = 0.0_rb
          totdclfl(lay) = 0.0_rb
          icldlyr(lay) = 0
+      enddo
 
-! Change to band loop?
-         do ig = 1, ngptlw
-            if (cldfmc(ig,lay) .eq. 1._rb) then
-               ib = ngb(ig)
-               odcld(lay,ig) = secdiff(ib) * taucmc(ig,lay)
-               transcld = exp(-odcld(lay,ig))
-               abscld(lay,ig) = 1._rb - transcld
-               efclfrac(lay,ig) = abscld(lay,ig) * cldfmc(ig,lay)
-               icldlyr(lay) = 1
-            else
-               odcld(lay,ig) = 0.0_rb
-               abscld(lay,ig) = 0.0_rb
-               efclfrac(lay,ig) = 0.0_rb
-            endif
+      do ig = 1, ngptlw
+         ib = ngb(ig)
+         do lay = 1, nlayers
+         if (cldfmc(ig,lay) .eq. 1._rb) then
+            odcld(lay,ig) = secdiff(ib) * taucmc(ig,lay)
+            transcld = exp(-odcld(lay,ig))
+            abscld(lay,ig) = 1._rb - transcld
+            efclfrac(lay,ig) = abscld(lay,ig) * cldfmc(ig,lay)
+            icldlyr(lay) = 1
+         else
+            odcld(lay,ig) = 0.0_rb
+            abscld(lay,ig) = 0.0_rb
+            efclfrac(lay,ig) = 0.0_rb
+         endif
          enddo
-
       enddo
 
       igc = 1
