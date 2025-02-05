@@ -287,8 +287,8 @@
  errmsg = ' '
  errflg = 0
 
- call mpas_pool_get_config(configs,'config_microp_scheme',microp_scheme)
- call mpas_pool_get_config(configs,'config_do_restart'   ,do_restart   )
+ call mpas_pool_get_config(configs,'config_microp_scheme'  ,microp_scheme)
+ call mpas_pool_get_config(configs,'config_do_restart'     ,do_restart   )
 
  microp_select: select case(trim(microp_scheme))
     case("mp_thompson","mp_thompson_aerosols")
@@ -335,6 +335,7 @@
  type(mpas_pool_type),intent(inout):: tend
 
 !local pointers:
+ integer,pointer:: cache_blocksize
  character(len=StrKIND),pointer:: microp_scheme
 
 !local variables and arrays:
@@ -353,6 +354,7 @@
  errflg = 0
 
  call mpas_pool_get_config(configs,'config_microp_scheme',microp_scheme)
+ call mpas_pool_get_config(configs,'config_cache_blocksize',cache_blocksize)
 
 !... allocation of microphysics arrays:
 !$OMP MASTER
@@ -456,7 +458,8 @@
                   errmsg    = errmsg      , errflg     = errflg                               , &
                   ids = ids , ide = ide , jds = jds , jde = jde , kds = kds , kde = kde       , &
                   ims = ims , ime = ime , jms = jms , jme = jme , kms = kms , kme = kme       , &
-                  its = its , ite = ite , jts = jts , jte = jte , kts = kts , kte = kte         &
+                  its = its , ite = ite , jts = jts , jte = jte , kts = kts , kte = kte       , &
+                  cache_blocksize = cache_blocksize                                             &
                )
        call mpas_timer_stop('mp_wsm6')
 
