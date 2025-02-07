@@ -9170,6 +9170,9 @@ use module_wrf_error
 !      real(kind=rb) :: znicu(nlay+2)         ! temporary clear sky upward near-IR shortwave flux (w/m2)
 !      real(kind=rb) :: znicd(nlay+2)         ! temporary clear sky downward near-IR shortwave flux (w/m2)
 
+! Local
+      real(kind=rb) :: temp
+
 
 ! Initializations
 
@@ -9296,13 +9299,13 @@ use module_wrf_error
             zomgcmc(:,:) = 1._rb
 
          elseif (icld.ge.1) then
-            do i=1,nlayers
-               do ig=1,ngptsw
-                  zcldfmc(i,ig) = cldfmc(ig,i)
-                  ztaucmc(i,ig) = taucmc(ig,i)
-                  ztaormc(i,ig) = taormc(ig,i)
-                  zasycmc(i,ig) = asmcmc(ig,i)
-                  zomgcmc(i,ig) = ssacmc(ig,i)
+            do ig = 1, ngptsw
+               do i = 1, nlayers
+                 zcldfmc(i,ig) = cldfmc(ig,i)
+                 ztaucmc(i,ig) = taucmc(ig,i)
+                 ztaormc(i,ig) = taormc(ig,i)
+                 zasycmc(i,ig) = asmcmc(ig,i)
+                 zomgcmc(i,ig) = ssacmc(ig,i)
                enddo
             enddo
 
@@ -9328,23 +9331,33 @@ use module_wrf_error
 !            enddo
 
             do ib = 1, nbndsw
+               ! Initialize output arrays for the current band
                do i = 1, nlayers
-                  ztaua(i,ib) = 0._rb
-                  zasya(i,ib) = 0._rb
-                  zomga(i,ib) = 0._rb
-                  do ia = 1, naerec
-                     ztaua(i,ib) = ztaua(i,ib) + rsrtaua(ib,ia) * ecaer(iplon,i,ia)
-                     zomga(i,ib) = zomga(i,ib) + rsrtaua(ib,ia) * ecaer(iplon,i,ia) * &
-                                   rsrpiza(ib,ia)
-                     zasya(i,ib) = zasya(i,ib) + rsrtaua(ib,ia) * ecaer(iplon,i,ia) * &
-                                   rsrpiza(ib,ia) * rsrasya(ib,ia)
-                  enddo
-                  if (zomga(i,ib) /= 0._rb) then
-                     zasya(i,ib) = zasya(i,ib) / zomga(i,ib)
-                  endif
-                  if (ztaua(i,ib) /= 0._rb) then
-                     zomga(i,ib) = zomga(i,ib) / ztaua(i,ib)
-                  endif
+                 ztaua(i,ib) = 0._rb
+                 zomga(i,ib) = 0._rb
+                 zasya(i,ib) = 0._rb
+               enddo
+
+               ! Accumulate aerosol contributions over the aerosol species loop.
+               do ia = 1, naerec
+                 ! Multiply the common factor for each layer once per aerosol type.
+                 do i = 1, nlayers
+                   ! Compute common factor for current aerosol type
+                   temp = rsrtaua(ib,ia) * ecaer(iplon,i,ia)
+                   ztaua(i,ib) = ztaua(i,ib) + temp
+                   zomga(i,ib) = zomga(i,ib) + temp * rsrpiza(ib,ia)
+                   zasya(i,ib) = zasya(i,ib) + temp * rsrpiza(ib,ia) * rsrasya(ib,ia)
+                 enddo
+               enddo
+
+               ! Post-processing: adjust ratios for each layer.
+               do i = 1, nlayers
+                 if (zomga(i,ib) /= 0._rb) then
+                   zasya(i,ib) = zasya(i,ib) / zomga(i,ib)
+                 endif
+                 if (ztaua(i,ib) /= 0._rb) then
+                   zomga(i,ib) = zomga(i,ib) / ztaua(i,ib)
+                 endif
                enddo
             enddo
 
@@ -10110,65 +10123,77 @@ CONTAINS
 
           !--- initialize local arrays called in the calculation of the cloud optical properties and radiative
           !    fluxes:
-          do n = 1, ncol
-             do k = kts, kte
-                reliq(ncol,k)  = 10.
-                reice(ncol,k)  = 10.
-                resnow(ncol,k) = 10.
-                cliqwp(ncol,k) = 0.
-                cicewp(ncol,k) = 0.
-                csnowp(ncol,k) = 0.
-             enddo
+         ! Segment 1: Set cloud effective radii and water/ice/snow water path
+         do k = kts, kte
+            do n = 1, ncol
+               reliq(n, k)  = 10.
+               reice(n, k)  = 10.
+               resnow(n, k) = 10.
+               cliqwp(n, k) = 0.
+               cicewp(n, k) = 0.
+               csnowp(n, k) = 0.
+            end do
+         end do
 
-             do k = 1, nlay
-                clwpth(n,k)  = 0.
-                ciwpth(n,k)  = 0.
-                cswpth(n,k)  = 0.
-                rel(n,k)     = 0.
-                rei(n,k)     = 0.
-                res(n,k)     = 0.
-                cldfrac(n,k) = 0.
-                relqmcl(n,k) = 0.
-                reicmcl(n,k) = 0.
-                resnmcl(n,k) = 0.
-                swuflx(n,k)  = 0.
-                swuflxc(n,k) = 0.
-                swdflx(n,k)  = 0.
-                swdflxc(n,k) = 0.
-                swhr(n,k)    = 0.
-                swhrc(n,k)   = 0.
-                taucld(1:nbndsw,n,k)  = 0.
-                tauaer(n,k,1:nbndsw)  = 0.
-                ssaaer(n,k,1:nbndsw)  = 0.
-                asmaer(n,k,1:nbndsw)  = 0.
-                cldfmcl(1:ngptsw,n,k) = 0.
-                clwpmcl(1:ngptsw,n,k) = 0.
-                ciwpmcl(1:ngptsw,n,k) = 0.
-                cswpmcl(1:ngptsw,n,k) = 0.
-                taucmcl(1:ngptsw,n,k) = 0.
-             enddo
-             do k = 1, nlay + 1
-                sibvisdir(ncol,k) = 0.
-                sibvisdif(ncol,k) = 0.                
-                sibnirdir(ncol,k) = 0.
-                sibnirdif(ncol,k) = 0.                
-                swdkdir(n,k)      = 0.
-                swdkdif(n,k)      = 0.
-             enddo
-             swuflx(n,nlay+1)  = 0.
-             swuflxc(n,nlay+1) = 0.
-             swdflx(n,nlay+1)  = 0.
-             swdflxc(n,nlay+1) = 0.
-          enddo
+         ! Segment 2: Initialize layer properties 
+         do k = 1, nlay
+            do n = 1, ncol
+               clwpth(n, k)  = 0.
+               ciwpth(n, k)  = 0.
+               cswpth(n, k)  = 0.
+               rel(n, k)     = 0.
+               rei(n, k)     = 0.
+               res(n, k)     = 0.
+               cldfrac(n, k) = 0.
+               relqmcl(n, k) = 0.
+               reicmcl(n, k) = 0.
+               resnmcl(n, k) = 0.
+               swuflx(n, k)  = 0.
+               swuflxc(n, k) = 0.
+               swdflx(n, k)  = 0.
+               swdflxc(n, k) = 0.
+               swhr(n, k)    = 0.
+               swhrc(n, k)   = 0.
+               taucld(1:nbndsw, n, k) = 0.
+               tauaer(n, k, 1:nbndsw)   = 0.
+               ssaaer(n, k, 1:nbndsw)   = 0.
+               asmaer(n, k, 1:nbndsw)   = 0.
+               cldfmcl(1:ngptsw, n, k) = 0.
+               clwpmcl(1:ngptsw, n, k) = 0.
+               ciwpmcl(1:ngptsw, n, k) = 0.
+               cswpmcl(1:ngptsw, n, k) = 0.
+               taucmcl(1:ngptsw, n, k) = 0.
+            end do
+         end do
+
+         ! Segment 3: Initialize ancillary arrays for sub-column generation
+         do k = 1, nlay + 1
+            do n = 1, ncol
+               sibvisdir(n, k) = 0.
+               sibvisdif(n, k) = 0.
+               sibnirdir(n, k) = 0.
+               sibnirdif(n, k) = 0.
+               swdkdir(n, k)   = 0.
+               swdkdif(n, k)   = 0.
+            end do
+         end do
+
+         ! Segment 4: Set surface-related fluxes at the top-of-atmosphere layer
+         do n = 1, ncol
+            swuflx(n, nlay+1)  = 0.
+            swuflxc(n, nlay+1) = 0.
+            swdflx(n, nlay+1)  = 0.
+            swdflxc(n, nlay+1) = 0.
+         end do
 
           !--- initialization of aerosol optical properties:
-          do n = 1, ncol
+           do na = 1, naerec
              do k = 1, nlay
-                do na = 1, naerec
-                   ecaer(n,k,na)   = 0.
-                enddo
-             enddo
-          enddo
+               do n = 1, ncol
+                  ecaer(n,k,na) = 0.
+               end do
+             end do
+           end do
 
           !--- fill local arrays with input sounding. convert water vapor mass mixing ratio to
           !    volume mixing ratio:
