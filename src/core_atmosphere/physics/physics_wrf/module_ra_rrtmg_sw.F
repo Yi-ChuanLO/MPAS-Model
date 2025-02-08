@@ -3332,7 +3332,8 @@ use module_wrf_error
 ! vapor self-continuum is interpolated (in temperature) separately.  
 
 ! Lower atmosphere loop
-      do lay = 1, laytrop
+      do ig = 1, ng16
+         do lay = 1, laytrop
          speccomb = colh2o(lay) + strrat1*colch4(lay)
          specparm = colh2o(lay)/speccomb 
          if (specparm .ge. oneminus) specparm = oneminus
@@ -3353,49 +3354,50 @@ use module_wrf_error
          indf = indfor(lay)
          tauray = colmol(lay) * rayl
 
-         do ig = 1, ng16
-            taug(lay,ig) = speccomb * &
-                (fac000 * absa(ind0   ,ig) + &
-                 fac100 * absa(ind0 +1,ig) + &
-                 fac010 * absa(ind0 +9,ig) + &
-                 fac110 * absa(ind0+10,ig) + &
-                 fac001 * absa(ind1   ,ig) + &
-                 fac101 * absa(ind1 +1,ig) + &
-                 fac011 * absa(ind1 +9,ig) + &
-                 fac111 * absa(ind1+10,ig)) + &
-                 colh2o(lay) * &
-                 (selffac(lay) * (selfref(inds,ig) + &
-                 selffrac(lay) * &
-                 (selfref(inds+1,ig) - selfref(inds,ig))) + &
-                 forfac(lay) * (forref(indf,ig) + &
-                 forfrac(lay) * &
-                 (forref(indf+1,ig) - forref(indf,ig)))) 
-!            ssa(lay,ig) = tauray/taug(lay,ig)
-            taur(lay,ig) = tauray
+         taug(lay,ig) = speccomb * &
+             (fac000 * absa(ind0   ,ig) + &
+              fac100 * absa(ind0 +1,ig) + &
+              fac010 * absa(ind0 +9,ig) + &
+              fac110 * absa(ind0+10,ig) + &
+              fac001 * absa(ind1   ,ig) + &
+              fac101 * absa(ind1 +1,ig) + &
+              fac011 * absa(ind1 +9,ig) + &
+              fac111 * absa(ind1+10,ig)) + &
+              colh2o(lay) * &
+              (selffac(lay) * (selfref(inds,ig) + &
+              selffrac(lay) * &
+              (selfref(inds+1,ig) - selfref(inds,ig))) + &
+              forfac(lay) * (forref(indf,ig) + &
+              forfrac(lay) * &
+              (forref(indf+1,ig) - forref(indf,ig)))) 
+      !            ssa(lay,ig) = tauray/taug(lay,ig)
+         taur(lay,ig) = tauray
          enddo
       enddo
 
       laysolfr = nlayers
 
 ! Upper atmosphere loop
-      do lay = laytrop+1, nlayers
-         if (jp(lay-1) .lt. layreffr .and. jp(lay) .ge. layreffr) &
+      do ig = 1, ng16
+         do lay = laytrop+1, nlayers
+         if (jp(lay-1) .lt. layreffr .and. jp(lay) .ge. layreffr) then
             laysolfr = lay
+         end if
          ind0 = ((jp(lay)-13)*5+(jt(lay)-1))*nspb(16) + 1
          ind1 = ((jp(lay)-12)*5+(jt1(lay)-1))*nspb(16) + 1
          tauray = colmol(lay) * rayl
 
-         do ig = 1, ng16
-            taug(lay,ig) = colch4(lay) * &
-                (fac00(lay) * absb(ind0  ,ig) + &
-                 fac10(lay) * absb(ind0+1,ig) + &
-                 fac01(lay) * absb(ind1  ,ig) + &
-                 fac11(lay) * absb(ind1+1,ig)) 
-!            ssa(lay,ig) = tauray/taug(lay,ig)
-            if (lay .eq. laysolfr) sfluxzen(ig) = sfluxref(ig) 
-            taur(lay,ig) = tauray  
-         enddo
-      enddo
+         taug(lay,ig) = colch4(lay) * ( &
+             fac00(lay) * absb(ind0  ,ig) + &
+             fac10(lay) * absb(ind0+1,ig) + &
+             fac01(lay) * absb(ind1  ,ig) + &
+             fac11(lay) * absb(ind1+1,ig))
+         if (lay .eq. laysolfr) then
+             sfluxzen(ig) = sfluxref(ig)
+         end if
+         taur(lay,ig) = tauray
+         end do
+      end do
 
       end subroutine taumol16
 
@@ -3427,7 +3429,8 @@ use module_wrf_error
 ! vapor self-continuum is interpolated (in temperature) separately.  
 
 ! Lower atmosphere loop
-      do lay = 1, laytrop
+      do ig = 1, ng17
+         do lay = 1, laytrop
          speccomb = colh2o(lay) + strrat*colco2(lay)
          specparm = colh2o(lay)/speccomb 
          if (specparm .ge. oneminus) specparm = oneminus
@@ -3448,32 +3451,32 @@ use module_wrf_error
          indf = indfor(lay)
          tauray = colmol(lay) * rayl
 
-         do ig = 1, ng17
-            taug(lay,ngs16+ig) = speccomb * &
-                (fac000 * absa(ind0,ig) + &
-                 fac100 * absa(ind0+1,ig) + &
-                 fac010 * absa(ind0+9,ig) + &
-                 fac110 * absa(ind0+10,ig) + &
-                 fac001 * absa(ind1,ig) + &
-                 fac101 * absa(ind1+1,ig) + &
-                 fac011 * absa(ind1+9,ig) + &
-                 fac111 * absa(ind1+10,ig)) + &
-                 colh2o(lay) * &
-                 (selffac(lay) * (selfref(inds,ig) + &
-                 selffrac(lay) * &
-                 (selfref(inds+1,ig) - selfref(inds,ig))) + &
-                 forfac(lay) * (forref(indf,ig) + &
-                 forfrac(lay) * &
-                 (forref(indf+1,ig) - forref(indf,ig)))) 
-!             ssa(lay,ngs16+ig) = tauray/taug(lay,ngs16+ig)
-            taur(lay,ngs16+ig) = tauray
+         taug(lay,ngs16+ig) = speccomb * &
+             (fac000 * absa(ind0,ig) + &
+              fac100 * absa(ind0+1,ig) + &
+              fac010 * absa(ind0+9,ig) + &
+              fac110 * absa(ind0+10,ig) + &
+              fac001 * absa(ind1,ig) + &
+              fac101 * absa(ind1+1,ig) + &
+              fac011 * absa(ind1+9,ig) + &
+              fac111 * absa(ind1+10,ig)) + &
+              colh2o(lay) * &
+              (selffac(lay) * (selfref(inds,ig) + &
+              selffrac(lay) * &
+              (selfref(inds+1,ig) - selfref(inds,ig))) + &
+              forfac(lay) * (forref(indf,ig) + &
+              forfrac(lay) * &
+              (forref(indf+1,ig) - forref(indf,ig)))) 
+      !             ssa(lay,ngs16+ig) = tauray/taug(lay,ngs16+ig)
+         taur(lay,ngs16+ig) = tauray
          enddo
       enddo
 
       laysolfr = nlayers
 
 ! Upper atmosphere loop
-      do lay = laytrop+1, nlayers
+      do ig = 1, ng17
+         do lay = laytrop+1, nlayers
          if (jp(lay-1) .lt. layreffr .and. jp(lay) .ge. layreffr) &
             laysolfr = lay
          speccomb = colh2o(lay) + strrat*colco2(lay)
@@ -3495,24 +3498,23 @@ use module_wrf_error
          indf = indfor(lay)
          tauray = colmol(lay) * rayl
 
-         do ig = 1, ng17
-            taug(lay,ngs16+ig) = speccomb * &
-                (fac000 * absb(ind0,ig) + &
-                 fac100 * absb(ind0+1,ig) + &
-                 fac010 * absb(ind0+5,ig) + &
-                 fac110 * absb(ind0+6,ig) + &
-                 fac001 * absb(ind1,ig) + &
-                 fac101 * absb(ind1+1,ig) + &
-                 fac011 * absb(ind1+5,ig) + &
-                 fac111 * absb(ind1+6,ig)) + &
-                 colh2o(lay) * &
-                 forfac(lay) * (forref(indf,ig) + &
-                 forfrac(lay) * &
-                 (forref(indf+1,ig) - forref(indf,ig))) 
-!            ssa(lay,ngs16+ig) = tauray/taug(lay,ngs16+ig)
-            if (lay .eq. laysolfr) sfluxzen(ngs16+ig) = sfluxref(ig,js) &
-               + fs * (sfluxref(ig,js+1) - sfluxref(ig,js))
-            taur(lay,ngs16+ig) = tauray
+         taug(lay,ngs16+ig) = speccomb * &
+             (fac000 * absb(ind0,ig) + &
+              fac100 * absb(ind0+1,ig) + &
+              fac010 * absb(ind0+5,ig) + &
+              fac110 * absb(ind0+6,ig) + &
+              fac001 * absb(ind1,ig) + &
+              fac101 * absb(ind1+1,ig) + &
+              fac011 * absb(ind1+5,ig) + &
+              fac111 * absb(ind1+6,ig)) + &
+              colh2o(lay) * &
+              forfac(lay) * (forref(indf,ig) + &
+              forfrac(lay) * &
+              (forref(indf+1,ig) - forref(indf,ig))) 
+      !            ssa(lay,ngs16+ig) = tauray/taug(lay,ngs16+ig)
+         if (lay .eq. laysolfr) sfluxzen(ngs16+ig) = sfluxref(ig,js) &
+            + fs * (sfluxref(ig,js+1) - sfluxref(ig,js))
+         taur(lay,ngs16+ig) = tauray
          enddo
       enddo
 
@@ -3548,7 +3550,8 @@ use module_wrf_error
       laysolfr = laytrop
       
 ! Lower atmosphere loop
-      do lay = 1, laytrop
+      do ig = 1, ng18
+         do lay = 1, laytrop
          if (jp(lay) .lt. layreffr .and. jp(lay+1) .ge. layreffr) &
             laysolfr = min(lay+1,laytrop)
          speccomb = colh2o(lay) + strrat*colch4(lay)
@@ -3571,46 +3574,45 @@ use module_wrf_error
          indf = indfor(lay)
          tauray = colmol(lay) * rayl
 
-         do ig = 1, ng18
-            taug(lay,ngs17+ig) = speccomb * &
-                (fac000 * absa(ind0,ig) + &
-                 fac100 * absa(ind0+1,ig) + &
-                 fac010 * absa(ind0+9,ig) + &
-                 fac110 * absa(ind0+10,ig) + &
-                 fac001 * absa(ind1,ig) + &
-                 fac101 * absa(ind1+1,ig) + &
-                 fac011 * absa(ind1+9,ig) + &
-                 fac111 * absa(ind1+10,ig)) + &
-                 colh2o(lay) * &
-                 (selffac(lay) * (selfref(inds,ig) + &
-                 selffrac(lay) * &
-                 (selfref(inds+1,ig) - selfref(inds,ig))) + &
-                 forfac(lay) * (forref(indf,ig) + &
-                 forfrac(lay) * &
-                 (forref(indf+1,ig) - forref(indf,ig)))) 
-!            ssa(lay,ngs17+ig) = tauray/taug(lay,ngs17+ig)
-            if (lay .eq. laysolfr) sfluxzen(ngs17+ig) = sfluxref(ig,js) &
-               + fs * (sfluxref(ig,js+1) - sfluxref(ig,js))
-            taur(lay,ngs17+ig) = tauray
+         taug(lay,ngs17+ig) = speccomb * &
+             (fac000 * absa(ind0,ig) + &
+              fac100 * absa(ind0+1,ig) + &
+              fac010 * absa(ind0+9,ig) + &
+              fac110 * absa(ind0+10,ig) + &
+              fac001 * absa(ind1,ig) + &
+              fac101 * absa(ind1+1,ig) + &
+              fac011 * absa(ind1+9,ig) + &
+              fac111 * absa(ind1+10,ig)) + &
+              colh2o(lay) * &
+              (selffac(lay) * (selfref(inds,ig) + &
+              selffrac(lay) * &
+              (selfref(inds+1,ig) - selfref(inds,ig))) + &
+              forfac(lay) * (forref(indf,ig) + &
+              forfrac(lay) * &
+              (forref(indf+1,ig) - forref(indf,ig)))) 
+   !            ssa(lay,ngs17+ig) = tauray/taug(lay,ngs17+ig)
+         if (lay .eq. laysolfr) sfluxzen(ngs17+ig) = sfluxref(ig,js) &
+            + fs * (sfluxref(ig,js+1) - sfluxref(ig,js))
+         taur(lay,ngs17+ig) = tauray
          enddo
       enddo
 
 ! Upper atmosphere loop
-      do lay = laytrop+1, nlayers
+      do ig = 1, ng18
+         do lay = laytrop+1, nlayers
          ind0 = ((jp(lay)-13)*5+(jt(lay)-1))*nspb(18) + 1
          ind1 = ((jp(lay)-12)*5+(jt1(lay)-1))*nspb(18) + 1
          tauray = colmol(lay) * rayl
 
-         do ig = 1, ng18
-            taug(lay,ngs17+ig) = colch4(lay) * &
-                (fac00(lay) * absb(ind0,ig) + &
-                 fac10(lay) * absb(ind0+1,ig) + &
-                 fac01(lay) * absb(ind1,ig) + &	  
-                 fac11(lay) * absb(ind1+1,ig)) 
-!           ssa(lay,ngs17+ig) = tauray/taug(lay,ngs17+ig)
-           taur(lay,ngs17+ig) = tauray
+         taug(lay,ngs17+ig) = colch4(lay) * &
+             (fac00(lay) * absb(ind0,ig) + &
+              fac10(lay) * absb(ind0+1,ig) + &
+              fac01(lay) * absb(ind1,ig) + &	  
+              fac11(lay) * absb(ind1+1,ig)) 
+   !           ssa(lay,ngs17+ig) = tauray/taug(lay,ngs17+ig)
+         taur(lay,ngs17+ig) = tauray
          enddo
-       enddo
+      enddo
 
        end subroutine taumol18
 
@@ -3644,7 +3646,8 @@ use module_wrf_error
       laysolfr = laytrop
 
 ! Lower atmosphere loop      
-      do lay = 1, laytrop
+      do ig = 1 , ng19
+         do lay = 1, laytrop
          if (jp(lay) .lt. layreffr .and. jp(lay+1) .ge. layreffr) &
             laysolfr = min(lay+1,laytrop)
          speccomb = colh2o(lay) + strrat*colco2(lay)
@@ -3667,44 +3670,43 @@ use module_wrf_error
          indf = indfor(lay)
          tauray = colmol(lay) * rayl
 
-         do ig = 1 , ng19
-            taug(lay,ngs18+ig) = speccomb * &
-                (fac000 * absa(ind0,ig) + &
-                 fac100 * absa(ind0+1,ig) + &
-                 fac010 * absa(ind0+9,ig) + &
-                 fac110 * absa(ind0+10,ig) + &
-                 fac001 * absa(ind1,ig) + &
-                 fac101 * absa(ind1+1,ig) + &
-                 fac011 * absa(ind1+9,ig) + &
-                 fac111 * absa(ind1+10,ig)) + &
-                 colh2o(lay) * &
-                 (selffac(lay) * (selfref(inds,ig) + &
-                 selffrac(lay) * &
-                 (selfref(inds+1,ig) - selfref(inds,ig))) + & 
-                 forfac(lay) * (forref(indf,ig) + &
-                 forfrac(lay) * &
-                 (forref(indf+1,ig) - forref(indf,ig)))) 
-!            ssa(lay,ngs18+ig) = tauray/taug(lay,ngs18+ig)
-            if (lay .eq. laysolfr) sfluxzen(ngs18+ig) = sfluxref(ig,js) &
-               + fs * (sfluxref(ig,js+1) - sfluxref(ig,js))
-            taur(lay,ngs18+ig) = tauray   
+         taug(lay,ngs18+ig) = speccomb * &
+             (fac000 * absa(ind0,ig) + &
+              fac100 * absa(ind0+1,ig) + &
+              fac010 * absa(ind0+9,ig) + &
+              fac110 * absa(ind0+10,ig) + &
+              fac001 * absa(ind1,ig) + &
+              fac101 * absa(ind1+1,ig) + &
+              fac011 * absa(ind1+9,ig) + &
+              fac111 * absa(ind1+10,ig)) + &
+              colh2o(lay) * &
+              (selffac(lay) * (selfref(inds,ig) + &
+              selffrac(lay) * &
+              (selfref(inds+1,ig) - selfref(inds,ig))) + & 
+              forfac(lay) * (forref(indf,ig) + &
+              forfrac(lay) * &
+              (forref(indf+1,ig) - forref(indf,ig)))) 
+   !            ssa(lay,ngs18+ig) = tauray/taug(lay,ngs18+ig)
+         if (lay .eq. laysolfr) sfluxzen(ngs18+ig) = sfluxref(ig,js) &
+            + fs * (sfluxref(ig,js+1) - sfluxref(ig,js))
+         taur(lay,ngs18+ig) = tauray   
          enddo
       enddo
 
 ! Upper atmosphere loop
-      do lay = laytrop+1, nlayers
+      do ig = 1 , ng19
+         do lay = laytrop+1, nlayers
          ind0 = ((jp(lay)-13)*5+(jt(lay)-1))*nspb(19) + 1
          ind1 = ((jp(lay)-12)*5+(jt1(lay)-1))*nspb(19) + 1
          tauray = colmol(lay) * rayl
 
-         do ig = 1 , ng19
-            taug(lay,ngs18+ig) = colco2(lay) * &
-                (fac00(lay) * absb(ind0,ig) + &
-                 fac10(lay) * absb(ind0+1,ig) + &
-                 fac01(lay) * absb(ind1,ig) + &
-                 fac11(lay) * absb(ind1+1,ig)) 
-!            ssa(lay,ngs18+ig) = tauray/taug(lay,ngs18+ig) 
-            taur(lay,ngs18+ig) = tauray   
+         taug(lay,ngs18+ig) = colco2(lay) * &
+             (fac00(lay) * absb(ind0,ig) + &
+              fac10(lay) * absb(ind0+1,ig) + &
+              fac01(lay) * absb(ind1,ig) + &
+              fac11(lay) * absb(ind1+1,ig)) 
+   !            ssa(lay,ngs18+ig) = tauray/taug(lay,ngs18+ig) 
+         taur(lay,ngs18+ig) = tauray   
          enddo
       enddo
 
@@ -3742,7 +3744,8 @@ use module_wrf_error
       laysolfr = laytrop
 
 ! Lower atmosphere loop
-      do lay = 1, laytrop
+      do ig = 1, ng20
+         do lay = 1, laytrop
          if (jp(lay) .lt. layreffr .and. jp(lay+1) .ge. layreffr) &
             laysolfr = min(lay+1,laytrop)
          ind0 = ((jp(lay)-1)*5+(jt(lay)-1))*nspa(20) + 1
@@ -3751,44 +3754,43 @@ use module_wrf_error
          indf = indfor(lay)
          tauray = colmol(lay) * rayl
 
-         do ig = 1, ng20
-            taug(lay,ngs19+ig) = colh2o(lay) * &
-               ((fac00(lay) * absa(ind0,ig) + &
-                 fac10(lay) * absa(ind0+1,ig) + &
-                 fac01(lay) * absa(ind1,ig) + &
-                 fac11(lay) * absa(ind1+1,ig)) + &
-                 selffac(lay) * (selfref(inds,ig) + & 
-                 selffrac(lay) * &
-                 (selfref(inds+1,ig) - selfref(inds,ig))) + &
-                 forfac(lay) * (forref(indf,ig) + &
-                 forfrac(lay) * &
-                 (forref(indf+1,ig) - forref(indf,ig)))) &
-                 + colch4(lay) * absch4(ig)
-!            ssa(lay,ngs19+ig) = tauray/taug(lay,ngs19+ig)
-            taur(lay,ngs19+ig) = tauray 
-            if (lay .eq. laysolfr) sfluxzen(ngs19+ig) = sfluxref(ig) 
+         taug(lay,ngs19+ig) = colh2o(lay) * &
+            ((fac00(lay) * absa(ind0,ig) + &
+              fac10(lay) * absa(ind0+1,ig) + &
+              fac01(lay) * absa(ind1,ig) + &
+              fac11(lay) * absa(ind1+1,ig)) + &
+              selffac(lay) * (selfref(inds,ig) + & 
+              selffrac(lay) * &
+              (selfref(inds+1,ig) - selfref(inds,ig))) + &
+              forfac(lay) * (forref(indf,ig) + &
+              forfrac(lay) * &
+              (forref(indf+1,ig) - forref(indf,ig)))) &
+              + colch4(lay) * absch4(ig)
+   !            ssa(lay,ngs19+ig) = tauray/taug(lay,ngs19+ig)
+         taur(lay,ngs19+ig) = tauray 
+         if (lay .eq. laysolfr) sfluxzen(ngs19+ig) = sfluxref(ig) 
          enddo
       enddo
 
 ! Upper atmosphere loop
-      do lay = laytrop+1, nlayers
+      do ig = 1, ng20
+         do lay = laytrop+1, nlayers
          ind0 = ((jp(lay)-13)*5+(jt(lay)-1))*nspb(20) + 1
          ind1 = ((jp(lay)-12)*5+(jt1(lay)-1))*nspb(20) + 1
          indf = indfor(lay)
          tauray = colmol(lay) * rayl
 
-         do ig = 1, ng20
-            taug(lay,ngs19+ig) = colh2o(lay) * &
-                (fac00(lay) * absb(ind0,ig) + &
-                 fac10(lay) * absb(ind0+1,ig) + &
-                 fac01(lay) * absb(ind1,ig) + &
-                 fac11(lay) * absb(ind1+1,ig) + &
-                 forfac(lay) * (forref(indf,ig) + &
-                 forfrac(lay) * &
-                 (forref(indf+1,ig) - forref(indf,ig)))) + &
-                 colch4(lay) * absch4(ig)
-!            ssa(lay,ngs19+ig) = tauray/taug(lay,ngs19+ig)
-            taur(lay,ngs19+ig) = tauray 
+         taug(lay,ngs19+ig) = colh2o(lay) * &
+             (fac00(lay) * absb(ind0,ig) + &
+              fac10(lay) * absb(ind0+1,ig) + &
+              fac01(lay) * absb(ind1,ig) + &
+              fac11(lay) * absb(ind1+1,ig) + &
+              forfac(lay) * (forref(indf,ig) + &
+              forfrac(lay) * &
+              (forref(indf+1,ig) - forref(indf,ig)))) + &
+              colch4(lay) * absch4(ig)
+   !            ssa(lay,ngs19+ig) = tauray/taug(lay,ngs19+ig)
+         taur(lay,ngs19+ig) = tauray 
          enddo
       enddo
 
@@ -3824,7 +3826,8 @@ use module_wrf_error
       laysolfr = laytrop
       
 ! Lower atmosphere loop
-      do lay = 1, laytrop
+      do ig = 1, ng21
+         do lay = 1, laytrop
          if (jp(lay) .lt. layreffr .and. jp(lay+1) .ge. layreffr) &
             laysolfr = min(lay+1,laytrop)
          speccomb = colh2o(lay) + strrat*colco2(lay)
@@ -3847,32 +3850,32 @@ use module_wrf_error
          indf = indfor(lay)
          tauray = colmol(lay) * rayl
 
-         do ig = 1, ng21
-            taug(lay,ngs20+ig) = speccomb * &
-                (fac000 * absa(ind0,ig) + &
-                 fac100 * absa(ind0+1,ig) + &
-                 fac010 * absa(ind0+9,ig) + &
-                 fac110 * absa(ind0+10,ig) + &
-                 fac001 * absa(ind1,ig) + &
-                 fac101 * absa(ind1+1,ig) + &
-                 fac011 * absa(ind1+9,ig) + &
-                 fac111 * absa(ind1+10,ig)) + &
-                 colh2o(lay) * &
-                 (selffac(lay) * (selfref(inds,ig) + &
-                 selffrac(lay) * &
-                 (selfref(inds+1,ig) - selfref(inds,ig))) + &
-                 forfac(lay) * (forref(indf,ig) + &
-                 forfrac(lay) * &
-                 (forref(indf+1,ig) - forref(indf,ig))))
-!            ssa(lay,ngs20+ig) = tauray/taug(lay,ngs20+ig)
-            if (lay .eq. laysolfr) sfluxzen(ngs20+ig) = sfluxref(ig,js) &
-               + fs * (sfluxref(ig,js+1) - sfluxref(ig,js))
-            taur(lay,ngs20+ig) = tauray
+         taug(lay,ngs20+ig) = speccomb * &
+             (fac000 * absa(ind0,ig) + &
+              fac100 * absa(ind0+1,ig) + &
+              fac010 * absa(ind0+9,ig) + &
+              fac110 * absa(ind0+10,ig) + &
+              fac001 * absa(ind1,ig) + &
+              fac101 * absa(ind1+1,ig) + &
+              fac011 * absa(ind1+9,ig) + &
+              fac111 * absa(ind1+10,ig)) + &
+              colh2o(lay) * &
+              (selffac(lay) * (selfref(inds,ig) + &
+              selffrac(lay) * &
+              (selfref(inds+1,ig) - selfref(inds,ig))) + &
+              forfac(lay) * (forref(indf,ig) + &
+              forfrac(lay) * &
+              (forref(indf+1,ig) - forref(indf,ig))))
+   !            ssa(lay,ngs20+ig) = tauray/taug(lay,ngs20+ig)
+         if (lay .eq. laysolfr) sfluxzen(ngs20+ig) = sfluxref(ig,js) &
+            + fs * (sfluxref(ig,js+1) - sfluxref(ig,js))
+         taur(lay,ngs20+ig) = tauray
          enddo
       enddo
 
 ! Upper atmosphere loop
-      do lay = laytrop+1, nlayers
+      do ig = 1, ng21
+         do lay = laytrop+1, nlayers
          speccomb = colh2o(lay) + strrat*colco2(lay)
          specparm = colh2o(lay)/speccomb 
          if (specparm .ge. oneminus) specparm = oneminus
@@ -3892,22 +3895,21 @@ use module_wrf_error
          indf = indfor(lay)
          tauray = colmol(lay) * rayl
 
-         do ig = 1, ng21
-            taug(lay,ngs20+ig) = speccomb * &
-                (fac000 * absb(ind0,ig) + &
-                 fac100 * absb(ind0+1,ig) + &
-                 fac010 * absb(ind0+5,ig) + &
-                 fac110 * absb(ind0+6,ig) + &
-                 fac001 * absb(ind1,ig) + &
-                 fac101 * absb(ind1+1,ig) + &
-                 fac011 * absb(ind1+5,ig) + &
-                 fac111 * absb(ind1+6,ig)) + &
-                 colh2o(lay) * &
-                 forfac(lay) * (forref(indf,ig) + &
-                 forfrac(lay) * &
-                 (forref(indf+1,ig) - forref(indf,ig)))
-!            ssa(lay,ngs20+ig) = tauray/taug(lay,ngs20+ig)
-            taur(lay,ngs20+ig) = tauray
+         taug(lay,ngs20+ig) = speccomb * &
+             (fac000 * absb(ind0,ig) + &
+              fac100 * absb(ind0+1,ig) + &
+              fac010 * absb(ind0+5,ig) + &
+              fac110 * absb(ind0+6,ig) + &
+              fac001 * absb(ind1,ig) + &
+              fac101 * absb(ind1+1,ig) + &
+              fac011 * absb(ind1+5,ig) + &
+              fac111 * absb(ind1+6,ig)) + &
+              colh2o(lay) * &
+              forfac(lay) * (forref(indf,ig) + &
+              forfrac(lay) * &
+              (forref(indf+1,ig) - forref(indf,ig)))
+   !            ssa(lay,ngs20+ig) = tauray/taug(lay,ngs20+ig)
+         taur(lay,ngs20+ig) = tauray
          enddo
       enddo
 
@@ -3948,7 +3950,8 @@ use module_wrf_error
       laysolfr = laytrop
 
 ! Lower atmosphere loop
-      do lay = 1, laytrop
+      do ig = 1, ng22
+         do lay = 1, laytrop
          if (jp(lay) .lt. layreffr .and. jp(lay+1) .ge. layreffr) &
             laysolfr = min(lay+1,laytrop)
          o2cont = 4.35e-4_rb*colo2(lay)/(350.0_rb*2.0_rb)
@@ -3956,7 +3959,7 @@ use module_wrf_error
          specparm = colh2o(lay)/speccomb 
          if (specparm .ge. oneminus) specparm = oneminus
          specmult = 8._rb*(specparm)
-!         odadj = specparm + o2adj * (1._rb - specparm)
+   !            odadj = specparm + o2adj * (1._rb - specparm)
          js = 1 + int(specmult)
          fs = mod(specmult, 1._rb )
          fac000 = (1._rb - fs) * fac00(lay)
@@ -3973,47 +3976,46 @@ use module_wrf_error
          indf = indfor(lay)
          tauray = colmol(lay) * rayl
 
-         do ig = 1, ng22
-            taug(lay,ngs21+ig) = speccomb * &
-                (fac000 * absa(ind0,ig) + &
-                 fac100 * absa(ind0+1,ig) + &
-                 fac010 * absa(ind0+9,ig) + &
-                 fac110 * absa(ind0+10,ig) + &
-                 fac001 * absa(ind1,ig) + &
-                 fac101 * absa(ind1+1,ig) + &
-                 fac011 * absa(ind1+9,ig) + &
-                 fac111 * absa(ind1+10,ig)) + &
-                 colh2o(lay) * &
-                 (selffac(lay) * (selfref(inds,ig) + &
-                 selffrac(lay) * &
-                  (selfref(inds+1,ig) - selfref(inds,ig))) + &
-                 forfac(lay) * (forref(indf,ig) + &
-                 forfrac(lay) * &
-                 (forref(indf+1,ig) - forref(indf,ig)))) &
-                 + o2cont
-!            ssa(lay,ngs21+ig) = tauray/taug(lay,ngs21+ig)
-            if (lay .eq. laysolfr) sfluxzen(ngs21+ig) = sfluxref(ig,js) &
-                + fs * (sfluxref(ig,js+1) - sfluxref(ig,js))
-            taur(lay,ngs21+ig) = tauray
+         taug(lay,ngs21+ig) = speccomb * &
+             (fac000 * absa(ind0,ig) + &
+              fac100 * absa(ind0+1,ig) + &
+              fac010 * absa(ind0+9,ig) + &
+              fac110 * absa(ind0+10,ig) + &
+              fac001 * absa(ind1,ig) + &
+              fac101 * absa(ind1+1,ig) + &
+              fac011 * absa(ind1+9,ig) + &
+              fac111 * absa(ind1+10,ig)) + &
+              colh2o(lay) * &
+              (selffac(lay) * (selfref(inds,ig) + &
+              selffrac(lay) * &
+            (selfref(inds+1,ig) - selfref(inds,ig))) + &
+              forfac(lay) * (forref(indf,ig) + &
+              forfrac(lay) * &
+              (forref(indf+1,ig) - forref(indf,ig)))) &
+              + o2cont
+   !            ssa(lay,ngs21+ig) = tauray/taug(lay,ngs21+ig)
+         if (lay .eq. laysolfr) sfluxzen(ngs21+ig) = sfluxref(ig,js) &
+             + fs * (sfluxref(ig,js+1) - sfluxref(ig,js))
+         taur(lay,ngs21+ig) = tauray
          enddo
       enddo
 
 ! Upper atmosphere loop
-      do lay = laytrop+1, nlayers
+      do ig = 1, ng22
+         do lay = laytrop+1, nlayers
          o2cont = 4.35e-4_rb*colo2(lay)/(350.0_rb*2.0_rb)
          ind0 = ((jp(lay)-13)*5+(jt(lay)-1))*nspb(22) + 1
          ind1 = ((jp(lay)-12)*5+(jt1(lay)-1))*nspb(22) + 1
          tauray = colmol(lay) * rayl
 
-         do ig = 1, ng22
-            taug(lay,ngs21+ig) = colo2(lay) * o2adj * &
-                (fac00(lay) * absb(ind0,ig) + &
-                 fac10(lay) * absb(ind0+1,ig) + &
-                 fac01(lay) * absb(ind1,ig) + &
-                 fac11(lay) * absb(ind1+1,ig)) + &
-                 o2cont
-!            ssa(lay,ngs21+ig) = tauray/taug(lay,ngs21+ig)
-            taur(lay,ngs21+ig) = tauray
+         taug(lay,ngs21+ig) = colo2(lay) * o2adj * &
+             (fac00(lay) * absb(ind0,ig) + &
+              fac10(lay) * absb(ind0+1,ig) + &
+              fac01(lay) * absb(ind1,ig) + &
+              fac11(lay) * absb(ind1+1,ig)) + &
+              o2cont
+   !            ssa(lay,ngs21+ig) = tauray/taug(lay,ngs21+ig)
+         taur(lay,ngs21+ig) = tauray
          enddo
       enddo
 
@@ -4049,40 +4051,39 @@ use module_wrf_error
       laysolfr = laytrop
 
 ! Lower atmosphere loop
-      do lay = 1, laytrop
+      do ig = 1, ng23
+         do lay = 1, laytrop
          if (jp(lay) .lt. layreffr .and. jp(lay+1) .ge. layreffr) &
             laysolfr = min(lay+1,laytrop)
          ind0 = ((jp(lay)-1)*5+(jt(lay)-1))*nspa(23) + 1
          ind1 = (jp(lay)*5+(jt1(lay)-1))*nspa(23) + 1
          inds = indself(lay)
          indf = indfor(lay)
-
-         do ig = 1, ng23
-            tauray = colmol(lay) * rayl(ig)
-            taug(lay,ngs22+ig) = colh2o(lay) * &
-                (givfac * (fac00(lay) * absa(ind0,ig) + &
-                 fac10(lay) * absa(ind0+1,ig) + &
-                 fac01(lay) * absa(ind1,ig) + &
-                 fac11(lay) * absa(ind1+1,ig)) + &
-                 selffac(lay) * (selfref(inds,ig) + &
-                 selffrac(lay) * &
-                 (selfref(inds+1,ig) - selfref(inds,ig))) + &
-                 forfac(lay) * (forref(indf,ig) + &
-                 forfrac(lay) * &
-                 (forref(indf+1,ig) - forref(indf,ig)))) 
-!            ssa(lay,ngs22+ig) = tauray/taug(lay,ngs22+ig)
-            if (lay .eq. laysolfr) sfluxzen(ngs22+ig) = sfluxref(ig) 
-            taur(lay,ngs22+ig) = tauray
+         tauray = colmol(lay) * rayl(ig)
+         taug(lay,ngs22+ig) = colh2o(lay) * &
+             (givfac * (fac00(lay) * absa(ind0,ig) + &
+              fac10(lay) * absa(ind0+1,ig) + &
+              fac01(lay) * absa(ind1,ig) + &
+              fac11(lay) * absa(ind1+1,ig)) + &
+              selffac(lay) * (selfref(inds,ig) + &
+              selffrac(lay) * &
+              (selfref(inds+1,ig) - selfref(inds,ig))) + &
+              forfac(lay) * (forref(indf,ig) + &
+              forfrac(lay) * &
+              (forref(indf+1,ig) - forref(indf,ig)))) 
+   !            ssa(lay,ngs22+ig) = tauray/taug(lay,ngs22+ig)
+         if (lay .eq. laysolfr) sfluxzen(ngs22+ig) = sfluxref(ig) 
+         taur(lay,ngs22+ig) = tauray
          enddo
       enddo
 
 ! Upper atmosphere loop
-      do lay = laytrop+1, nlayers
-         do ig = 1, ng23
-!            taug(lay,ngs22+ig) = colmol(lay) * rayl(ig)
-!            ssa(lay,ngs22+ig) = 1.0_rb
-            taug(lay,ngs22+ig) = 0._rb
-            taur(lay,ngs22+ig) = colmol(lay) * rayl(ig) 
+      do ig = 1, ng23
+         do lay = laytrop+1, nlayers
+   !            taug(lay,ngs22+ig) = colmol(lay) * rayl(ig)
+   !            ssa(lay,ngs22+ig) = 1.0_rb
+         taug(lay,ngs22+ig) = 0._rb
+         taur(lay,ngs22+ig) = colmol(lay) * rayl(ig) 
          enddo
       enddo
 
@@ -4119,7 +4120,8 @@ use module_wrf_error
       laysolfr = laytrop
 
 ! Lower atmosphere loop
-      do lay = 1, laytrop
+      do ig = 1, ng24
+         do lay = 1, laytrop
          if (jp(lay) .lt. layreffr .and. jp(lay+1) .ge. layreffr) &
             laysolfr = min(lay+1,laytrop)
          speccomb = colh2o(lay) + strrat*colo2(lay)
@@ -4141,48 +4143,47 @@ use module_wrf_error
          inds = indself(lay)
          indf = indfor(lay)
 
-         do ig = 1, ng24
-            tauray = colmol(lay) * (rayla(ig,js) + &
-               fs * (rayla(ig,js+1) - rayla(ig,js)))
-            taug(lay,ngs23+ig) = speccomb * &
-                (fac000 * absa(ind0,ig) + &
-                 fac100 * absa(ind0+1,ig) + &
-                 fac010 * absa(ind0+9,ig) + &
-                 fac110 * absa(ind0+10,ig) + &
-                 fac001 * absa(ind1,ig) + &
-                 fac101 * absa(ind1+1,ig) + &
-                 fac011 * absa(ind1+9,ig) + &
-                 fac111 * absa(ind1+10,ig)) + &
-                 colo3(lay) * abso3a(ig) + &
-                 colh2o(lay) * & 
-                 (selffac(lay) * (selfref(inds,ig) + &
-                 selffrac(lay) * &
-                 (selfref(inds+1,ig) - selfref(inds,ig))) + &
-                 forfac(lay) * (forref(indf,ig) + & 
-                 forfrac(lay) * &
-                 (forref(indf+1,ig) - forref(indf,ig))))
-!            ssa(lay,ngs23+ig) = tauray/taug(lay,ngs23+ig)
-            if (lay .eq. laysolfr) sfluxzen(ngs23+ig) = sfluxref(ig,js) &
-               + fs * (sfluxref(ig,js+1) - sfluxref(ig,js))
-            taur(lay,ngs23+ig) = tauray
+         tauray = colmol(lay) * (rayla(ig,js) + &
+            fs * (rayla(ig,js+1) - rayla(ig,js)))
+         taug(lay,ngs23+ig) = speccomb * &
+             (fac000 * absa(ind0,ig) + &
+              fac100 * absa(ind0+1,ig) + &
+              fac010 * absa(ind0+9,ig) + &
+              fac110 * absa(ind0+10,ig) + &
+              fac001 * absa(ind1,ig) + &
+              fac101 * absa(ind1+1,ig) + &
+              fac011 * absa(ind1+9,ig) + &
+              fac111 * absa(ind1+10,ig)) + &
+              colo3(lay) * abso3a(ig) + &
+              colh2o(lay) * & 
+              (selffac(lay) * (selfref(inds,ig) + &
+              selffrac(lay) * &
+              (selfref(inds+1,ig) - selfref(inds,ig))) + &
+              forfac(lay) * (forref(indf,ig) + & 
+              forfrac(lay) * &
+              (forref(indf+1,ig) - forref(indf,ig))))
+   !            ssa(lay,ngs23+ig) = tauray/taug(lay,ngs23+ig)
+         if (lay .eq. laysolfr) sfluxzen(ngs23+ig) = sfluxref(ig,js) &
+            + fs * (sfluxref(ig,js+1) - sfluxref(ig,js))
+         taur(lay,ngs23+ig) = tauray
          enddo
       enddo
 
 ! Upper atmosphere loop
-      do lay = laytrop+1, nlayers
+      do ig = 1, ng24
+         do lay = laytrop+1, nlayers
          ind0 = ((jp(lay)-13)*5+(jt(lay)-1))*nspb(24) + 1
          ind1 = ((jp(lay)-12)*5+(jt1(lay)-1))*nspb(24) + 1
 
-         do ig = 1, ng24
-            tauray = colmol(lay) * raylb(ig)
-            taug(lay,ngs23+ig) = colo2(lay) * &
-                (fac00(lay) * absb(ind0,ig) + &
-                 fac10(lay) * absb(ind0+1,ig) + &
-                 fac01(lay) * absb(ind1,ig) + &
-                 fac11(lay) * absb(ind1+1,ig)) + &
-                 colo3(lay) * abso3b(ig)
-!            ssa(lay,ngs23+ig) = tauray/taug(lay,ngs23+ig)
-            taur(lay,ngs23+ig) = tauray
+         tauray = colmol(lay) * raylb(ig)
+         taug(lay,ngs23+ig) = colo2(lay) * &
+             (fac00(lay) * absb(ind0,ig) + &
+              fac10(lay) * absb(ind0+1,ig) + &
+              fac01(lay) * absb(ind1,ig) + &
+              fac11(lay) * absb(ind1+1,ig)) + &
+              colo3(lay) * abso3b(ig)
+   !            ssa(lay,ngs23+ig) = tauray/taug(lay,ngs23+ig)
+         taur(lay,ngs23+ig) = tauray
          enddo
       enddo
 
@@ -4218,33 +4219,33 @@ use module_wrf_error
       laysolfr = laytrop
 
 ! Lower atmosphere loop
-      do lay = 1, laytrop
+      do ig = 1, ng25
+         do lay = 1, laytrop
          if (jp(lay) .lt. layreffr .and. jp(lay+1) .ge. layreffr) &
             laysolfr = min(lay+1,laytrop)
          ind0 = ((jp(lay)-1)*5+(jt(lay)-1))*nspa(25) + 1
          ind1 = (jp(lay)*5+(jt1(lay)-1))*nspa(25) + 1
 
-         do ig = 1, ng25
-            tauray = colmol(lay) * rayl(ig)
-            taug(lay,ngs24+ig) = colh2o(lay) * &
-                (fac00(lay) * absa(ind0,ig) + &
-                 fac10(lay) * absa(ind0+1,ig) + &
-                 fac01(lay) * absa(ind1,ig) + &
-                 fac11(lay) * absa(ind1+1,ig)) + &
-                 colo3(lay) * abso3a(ig) 
-!            ssa(lay,ngs24+ig) = tauray/taug(lay,ngs24+ig)
-            if (lay .eq. laysolfr) sfluxzen(ngs24+ig) = sfluxref(ig) 
-            taur(lay,ngs24+ig) = tauray
+         tauray = colmol(lay) * rayl(ig)
+         taug(lay,ngs24+ig) = colh2o(lay) * &
+             (fac00(lay) * absa(ind0,ig) + &
+              fac10(lay) * absa(ind0+1,ig) + &
+              fac01(lay) * absa(ind1,ig) + &
+              fac11(lay) * absa(ind1+1,ig)) + &
+              colo3(lay) * abso3a(ig) 
+   !            ssa(lay,ngs24+ig) = tauray/taug(lay,ngs24+ig)
+         if (lay .eq. laysolfr) sfluxzen(ngs24+ig) = sfluxref(ig) 
+         taur(lay,ngs24+ig) = tauray
          enddo
       enddo
 
 ! Upper atmosphere loop
-      do lay = laytrop+1, nlayers
-         do ig = 1, ng25
-            tauray = colmol(lay) * rayl(ig)
-            taug(lay,ngs24+ig) = colo3(lay) * abso3b(ig) 
-!            ssa(lay,ngs24+ig) = tauray/taug(lay,ngs24+ig)
-            taur(lay,ngs24+ig) = tauray
+      do ig = 1, ng25
+         do lay = laytrop+1, nlayers
+         tauray = colmol(lay) * rayl(ig)
+         taug(lay,ngs24+ig) = colo3(lay) * abso3b(ig) 
+   !            ssa(lay,ngs24+ig) = tauray/taug(lay,ngs24+ig)
+         taur(lay,ngs24+ig) = tauray
          enddo
       enddo
 
@@ -4279,23 +4280,23 @@ use module_wrf_error
       laysolfr = laytrop
 
 ! Lower atmosphere loop
-      do lay = 1, laytrop
-         do ig = 1, ng26 
-!            taug(lay,ngs25+ig) = colmol(lay) * rayl(ig)
-!            ssa(lay,ngs25+ig) = 1.0_rb
-            if (lay .eq. laysolfr) sfluxzen(ngs25+ig) = sfluxref(ig) 
-            taug(lay,ngs25+ig) = 0._rb
-            taur(lay,ngs25+ig) = colmol(lay) * rayl(ig) 
+      do ig = 1, ng26
+         do lay = 1, laytrop
+   !            taug(lay,ngs25+ig) = colmol(lay) * rayl(ig)
+   !            ssa(lay,ngs25+ig) = 1.0_rb
+         if (lay .eq. laysolfr) sfluxzen(ngs25+ig) = sfluxref(ig) 
+         taug(lay,ngs25+ig) = 0._rb
+         taur(lay,ngs25+ig) = colmol(lay) * rayl(ig) 
          enddo
       enddo
 
 ! Upper atmosphere loop
-      do lay = laytrop+1, nlayers
-         do ig = 1, ng26
-!            taug(lay,ngs25+ig) = colmol(lay) * rayl(ig)
-!            ssa(lay,ngs25+ig) = 1.0_rb
-            taug(lay,ngs25+ig) = 0._rb
-            taur(lay,ngs25+ig) = colmol(lay) * rayl(ig) 
+      do ig = 1, ng26
+         do lay = laytrop+1, nlayers
+   !            taug(lay,ngs25+ig) = colmol(lay) * rayl(ig)
+   !            ssa(lay,ngs25+ig) = 1.0_rb
+         taug(lay,ngs25+ig) = 0._rb
+         taur(lay,ngs25+ig) = colmol(lay) * rayl(ig) 
          enddo
       enddo
 
@@ -4329,41 +4330,40 @@ use module_wrf_error
 ! vapor self-continuum is interpolated (in temperature) separately.  
 
 ! Lower atmosphere loop
-      do lay = 1, laytrop
+      do ig = 1, ng27
+         do lay = 1, laytrop
          ind0 = ((jp(lay)-1)*5+(jt(lay)-1))*nspa(27) + 1
          ind1 = (jp(lay)*5+(jt1(lay)-1))*nspa(27) + 1
-
-         do ig = 1, ng27
-            tauray = colmol(lay) * rayl(ig)
-            taug(lay,ngs26+ig) = colo3(lay) * &
-                (fac00(lay) * absa(ind0,ig) + &
-                 fac10(lay) * absa(ind0+1,ig) + &
-                 fac01(lay) * absa(ind1,ig) + &
-                 fac11(lay) * absa(ind1+1,ig))
-!            ssa(lay,ngs26+ig) = tauray/taug(lay,ngs26+ig)
-            taur(lay,ngs26+ig) = tauray
+         tauray = colmol(lay) * rayl(ig)
+         taug(lay,ngs26+ig) = colo3(lay) * &
+             (fac00(lay) * absa(ind0,ig) + &
+              fac10(lay) * absa(ind0+1,ig) + &
+              fac01(lay) * absa(ind1,ig) + &
+              fac11(lay) * absa(ind1+1,ig))
+   !            ssa(lay,ngs26+ig) = tauray/taug(lay,ngs26+ig)
+         taur(lay,ngs26+ig) = tauray
          enddo
       enddo
 
       laysolfr = nlayers
 
 ! Upper atmosphere loop
-      do lay = laytrop+1, nlayers
+      do ig = 1, ng27
+         do lay = laytrop+1, nlayers
          if (jp(lay-1) .lt. layreffr .and. jp(lay) .ge. layreffr) &
             laysolfr = lay
          ind0 = ((jp(lay)-13)*5+(jt(lay)-1))*nspb(27) + 1
          ind1 = ((jp(lay)-12)*5+(jt1(lay)-1))*nspb(27) + 1
 
-         do ig = 1, ng27
-            tauray = colmol(lay) * rayl(ig)
-            taug(lay,ngs26+ig) = colo3(lay) * &
-                (fac00(lay) * absb(ind0,ig) + &
-                 fac10(lay) * absb(ind0+1,ig) + &
-                 fac01(lay) * absb(ind1,ig) + & 
-                 fac11(lay) * absb(ind1+1,ig))
-!            ssa(lay,ngs26+ig) = tauray/taug(lay,ngs26+ig)
-            if (lay.eq.laysolfr) sfluxzen(ngs26+ig) = scalekur * sfluxref(ig) 
-            taur(lay,ngs26+ig) = tauray
+         tauray = colmol(lay) * rayl(ig)
+         taug(lay,ngs26+ig) = colo3(lay) * &
+             (fac00(lay) * absb(ind0,ig) + &
+              fac10(lay) * absb(ind0+1,ig) + &
+              fac01(lay) * absb(ind1,ig) + & 
+              fac11(lay) * absb(ind1+1,ig))
+   !            ssa(lay,ngs26+ig) = tauray/taug(lay,ngs26+ig)
+         if (lay.eq.laysolfr) sfluxzen(ngs26+ig) = scalekur * sfluxref(ig) 
+         taur(lay,ngs26+ig) = tauray
          enddo
       enddo
 
@@ -4397,7 +4397,8 @@ use module_wrf_error
 ! vapor self-continuum is interpolated (in temperature) separately.  
 
 ! Lower atmosphere loop
-      do lay = 1, laytrop
+      do ig = 1, ng28
+         do lay = 1, laytrop
          speccomb = colo3(lay) + strrat*colo2(lay)
          specparm = colo3(lay)/speccomb 
          if (specparm .ge. oneminus) specparm = oneminus
@@ -4416,25 +4417,25 @@ use module_wrf_error
          ind1 = (jp(lay)*5+(jt1(lay)-1))*nspa(28) + js
          tauray = colmol(lay) * rayl
 
-         do ig = 1, ng28
-            taug(lay,ngs27+ig) = speccomb * &
-                (fac000 * absa(ind0,ig) + &
-                 fac100 * absa(ind0+1,ig) + &
-                 fac010 * absa(ind0+9,ig) + &
-                 fac110 * absa(ind0+10,ig) + &
-                 fac001 * absa(ind1,ig) + &
-                 fac101 * absa(ind1+1,ig) + &
-                 fac011 * absa(ind1+9,ig) + &
-                 fac111 * absa(ind1+10,ig)) 
-!            ssa(lay,ngs27+ig) = tauray/taug(lay,ngs27+ig)
-            taur(lay,ngs27+ig) = tauray
+         taug(lay,ngs27+ig) = speccomb * &
+             (fac000 * absa(ind0,ig) + &
+              fac100 * absa(ind0+1,ig) + &
+              fac010 * absa(ind0+9,ig) + &
+              fac110 * absa(ind0+10,ig) + &
+              fac001 * absa(ind1,ig) + &
+              fac101 * absa(ind1+1,ig) + &
+              fac011 * absa(ind1+9,ig) + &
+              fac111 * absa(ind1+10,ig)) 
+   !            ssa(lay,ngs27+ig) = tauray/taug(lay,ngs27+ig)
+         taur(lay,ngs27+ig) = tauray
          enddo
       enddo
 
       laysolfr = nlayers
 
 ! Upper atmosphere loop
-      do lay = laytrop+1, nlayers
+      do ig = 1, ng28
+         do lay = laytrop+1, nlayers
          if (jp(lay-1) .lt. layreffr .and. jp(lay) .ge. layreffr) &
             laysolfr = lay
          speccomb = colo3(lay) + strrat*colo2(lay)
@@ -4455,20 +4456,19 @@ use module_wrf_error
          ind1 = ((jp(lay)-12)*5+(jt1(lay)-1))*nspb(28) + js
          tauray = colmol(lay) * rayl
 
-         do ig = 1, ng28
-            taug(lay,ngs27+ig) = speccomb * &
-                (fac000 * absb(ind0,ig) + &
-                 fac100 * absb(ind0+1,ig) + &
-                 fac010 * absb(ind0+5,ig) + &
-                 fac110 * absb(ind0+6,ig) + &
-                 fac001 * absb(ind1,ig) + &
-                 fac101 * absb(ind1+1,ig) + &
-                 fac011 * absb(ind1+5,ig) + &
-                 fac111 * absb(ind1+6,ig)) 
-!            ssa(lay,ngs27+ig) = tauray/taug(lay,ngs27+ig)
-            if (lay .eq. laysolfr) sfluxzen(ngs27+ig) = sfluxref(ig,js) &
-               + fs * (sfluxref(ig,js+1) - sfluxref(ig,js))
-            taur(lay,ngs27+ig) = tauray
+         taug(lay,ngs27+ig) = speccomb * &
+             (fac000 * absb(ind0,ig) + &
+              fac100 * absb(ind0+1,ig) + &
+              fac010 * absb(ind0+5,ig) + &
+              fac110 * absb(ind0+6,ig) + &
+              fac001 * absb(ind1,ig) + &
+              fac101 * absb(ind1+1,ig) + &
+              fac011 * absb(ind1+5,ig) + &
+              fac111 * absb(ind1+6,ig)) 
+   !            ssa(lay,ngs27+ig) = tauray/taug(lay,ngs27+ig)
+         if (lay .eq. laysolfr) sfluxzen(ngs27+ig) = sfluxref(ig,js) &
+            + fs * (sfluxref(ig,js+1) - sfluxref(ig,js))
+         taur(lay,ngs27+ig) = tauray
          enddo
       enddo
 
@@ -4502,51 +4502,51 @@ use module_wrf_error
 ! vapor self-continuum is interpolated (in temperature) separately.  
 
 ! Lower atmosphere loop
-      do lay = 1, laytrop
+      do ig = 1, ng29
+         do lay = 1, laytrop
          ind0 = ((jp(lay)-1)*5+(jt(lay)-1))*nspa(29) + 1
          ind1 = (jp(lay)*5+(jt1(lay)-1))*nspa(29) + 1
          inds = indself(lay)
          indf = indfor(lay)
          tauray = colmol(lay) * rayl
 
-         do ig = 1, ng29
-            taug(lay,ngs28+ig) = colh2o(lay) * &
-               ((fac00(lay) * absa(ind0,ig) + &
-                 fac10(lay) * absa(ind0+1,ig) + &
-                 fac01(lay) * absa(ind1,ig) + &
-                 fac11(lay) * absa(ind1+1,ig)) + &
-                 selffac(lay) * (selfref(inds,ig) + &
-                 selffrac(lay) * &
-                 (selfref(inds+1,ig) - selfref(inds,ig))) + &
-                 forfac(lay) * (forref(indf,ig) + & 
-                 forfrac(lay) * &
-                 (forref(indf+1,ig) - forref(indf,ig)))) &
-                 + colco2(lay) * absco2(ig) 
-!            ssa(lay,ngs28+ig) = tauray/taug(lay,ngs28+ig)
-            taur(lay,ngs28+ig) = tauray
+         taug(lay,ngs28+ig) = colh2o(lay) * &
+            ((fac00(lay) * absa(ind0,ig) + &
+              fac10(lay) * absa(ind0+1,ig) + &
+              fac01(lay) * absa(ind1,ig) + &
+              fac11(lay) * absa(ind1+1,ig)) + &
+              selffac(lay) * (selfref(inds,ig) + &
+              selffrac(lay) * &
+              (selfref(inds+1,ig) - selfref(inds,ig))) + &
+              forfac(lay) * (forref(indf,ig) + & 
+              forfrac(lay) * &
+              (forref(indf+1,ig) - forref(indf,ig)))) &
+              + colco2(lay) * absco2(ig) 
+   !            ssa(lay,ngs28+ig) = tauray/taug(lay,ngs28+ig)
+         taur(lay,ngs28+ig) = tauray
          enddo
       enddo
 
       laysolfr = nlayers
 
 ! Upper atmosphere loop
-      do lay = laytrop+1, nlayers
+      do ig = 1, ng29
+         do lay = laytrop+1, nlayers
          if (jp(lay-1) .lt. layreffr .and. jp(lay) .ge. layreffr) &
             laysolfr = lay
          ind0 = ((jp(lay)-13)*5+(jt(lay)-1))*nspb(29) + 1
          ind1 = ((jp(lay)-12)*5+(jt1(lay)-1))*nspb(29) + 1
          tauray = colmol(lay) * rayl
 
-         do ig = 1, ng29
-            taug(lay,ngs28+ig) = colco2(lay) * &
-                (fac00(lay) * absb(ind0,ig) + &
-                 fac10(lay) * absb(ind0+1,ig) + &
-                 fac01(lay) * absb(ind1,ig) + &
-                 fac11(lay) * absb(ind1+1,ig)) &  
-                 + colh2o(lay) * absh2o(ig) 
-!            ssa(lay,ngs28+ig) = tauray/taug(lay,ngs28+ig)
-            if (lay .eq. laysolfr) sfluxzen(ngs28+ig) = sfluxref(ig) 
-            taur(lay,ngs28+ig) = tauray
+         taug(lay,ngs28+ig) = colco2(lay) * &
+             (fac00(lay) * absb(ind0,ig) + &
+              fac10(lay) * absb(ind0+1,ig) + &
+              fac01(lay) * absb(ind1,ig) + &
+              fac11(lay) * absb(ind1+1,ig)) &  
+              + colh2o(lay) * absh2o(ig) 
+   !            ssa(lay,ngs28+ig) = tauray/taug(lay,ngs28+ig)
+         if (lay .eq. laysolfr) sfluxzen(ngs28+ig) = sfluxref(ig) 
+         taur(lay,ngs28+ig) = tauray
          enddo
       enddo
 
