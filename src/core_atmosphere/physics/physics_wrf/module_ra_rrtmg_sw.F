@@ -10129,14 +10129,12 @@ CONTAINS
           !    fluxes:
          ! Segment 1: Set cloud effective radii and water/ice/snow water path
          do k = kts, kte
-            do n = 1, ncol
-               reliq(n, k)  = 10.
-               reice(n, k)  = 10.
-               resnow(n, k) = 10.
-               cliqwp(n, k) = 0.
-               cicewp(n, k) = 0.
-               csnowp(n, k) = 0.
-            end do
+            reliq(ncol, k)  = 10.
+            reice(ncol, k)  = 10.
+            resnow(ncol, k) = 10.
+            cliqwp(ncol, k) = 0.
+            cicewp(ncol, k) = 0.
+            csnowp(ncol, k) = 0.
          end do
 
          ! Segment 2: Initialize layer properties 
@@ -10172,11 +10170,11 @@ CONTAINS
 
          ! Segment 3: Initialize ancillary arrays for sub-column generation
          do k = 1, nlay + 1
+            sibvisdir(ncol, k) = 0.
+            sibvisdif(ncol, k) = 0.
+            sibnirdir(ncol, k) = 0.
+            sibnirdif(ncol, k) = 0.
             do n = 1, ncol
-               sibvisdir(n, k) = 0.
-               sibvisdif(n, k) = 0.
-               sibnirdir(n, k) = 0.
-               sibnirdif(n, k) = 0.
                swdkdir(n, k)   = 0.
                swdkdif(n, k)   = 0.
             end do
