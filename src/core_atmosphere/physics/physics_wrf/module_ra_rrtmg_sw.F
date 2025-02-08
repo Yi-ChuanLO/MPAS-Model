@@ -1682,14 +1682,7 @@
       overlap = icld
 
 ! Ensure that cloud fractions are in bounds 
-      do ilev = 1, nlay
-         do i = 1, ncol
-            cldf(i,ilev) = cld(i,ilev)
-            if (cldf(i,ilev) < cldmin) then
-               cldf(i,ilev) = 0._rb
-            endif
-         enddo
-      enddo
+      cldf = merge(cld, 0._rb, cld >= cldmin)
 
 ! ----- Create seed  --------
    
@@ -1724,23 +1717,25 @@
 ! Random overlap
 ! i) pick a random value at every level
   
-         if (irng.eq.0) then 
-            do isubcol = 1,nsubcol
-               do ilev = 1,nlay
-                  call kissvec(seed1, seed2, seed3, seed4, rand_num)
-                  CDF(isubcol,:,ilev) = rand_num
+          if (irng.eq.0) then 
+            ! Loop over levels first then subcolumns to favor contiguous access in CDF(:, :, ilev)
+            do ilev = 1, nlay
+               do isubcol = 1, nsubcol
+                 call kissvec(seed1, seed2, seed3, seed4, rand_num)
+                 CDF(isubcol, :, ilev) = rand_num
                enddo
             enddo
-         elseif (irng.eq.1) then
-            do isubcol = 1, nsubcol
+          elseif (irng.eq.1) then
+            ! For irng=1, reorder loops so the innermost index is the first (isubcol),
+            ! which is contiguous in memory. This promotes vectorization.
+            do ilev = 1, nlay
                do i = 1, ncol
-                  do ilev = 1, nlay
-                     rand_num_mt = getRandomReal(randomNumbers)
-                     CDF(isubcol,i,ilev) = rand_num_mt
-                  enddo
+                 do isubcol = 1, nsubcol
+                   CDF(isubcol, i, ilev) = getRandomReal(randomNumbers)
+                 enddo
                enddo
-             enddo
-         endif
+            enddo
+          endif
 
       case(2) 
 ! Maximum-Random overlap
@@ -1750,16 +1745,16 @@
 !    - if the layer above is clear, we use a new random number 
 
          if (irng.eq.0) then 
-            do isubcol = 1,nsubcol
-               do ilev = 1,nlay
+            do ilev = 1,nlay
+               do isubcol = 1,nsubcol
                   call kissvec(seed1, seed2, seed3, seed4, rand_num)
                   CDF(isubcol,:,ilev) = rand_num
                enddo
             enddo
          elseif (irng.eq.1) then
-            do isubcol = 1, nsubcol
+            do ilev = 1, nlay
                do i = 1, ncol
-                  do ilev = 1, nlay
+                  do isubcol = 1, nsubcol
                      rand_num_mt = getRandomReal(randomNumbers)
                      CDF(isubcol,i,ilev) = rand_num_mt
                   enddo
@@ -1783,23 +1778,23 @@
 ! Maximum overlap
 ! i) pick same random numebr at every level  
 
-         if (irng.eq.0) then 
-            do isubcol = 1,nsubcol
+          if (irng.eq.0) then 
+            do ilev = 1, nlay
                call kissvec(seed1, seed2, seed3, seed4, rand_num)
-               do ilev = 1,nlay
-                  CDF(isubcol,:,ilev) = rand_num
+               do isubcol = 1, nsubcol
+                 CDF(isubcol,:,ilev) = rand_num
                enddo
             enddo
-         elseif (irng.eq.1) then
-            do isubcol = 1, nsubcol
+          elseif (irng.eq.1) then
+            do ilev = 1, nlay
                do i = 1, ncol
-                  rand_num_mt = getRandomReal(randomNumbers)
-                  do ilev = 1, nlay
-                     CDF(isubcol,i,ilev) = rand_num_mt
-                  enddo
+                 rand_num_mt = getRandomReal(randomNumbers)
+                 do isubcol = 1, nsubcol
+                   CDF(isubcol,i,ilev) = rand_num_mt
+                 enddo
                enddo
-             enddo
-         endif
+            enddo
+          endif
 
 !    case(4)  - inactive
 !       ! Exponential overlap: weighting between maximum and random overlap increases with the distance. 
