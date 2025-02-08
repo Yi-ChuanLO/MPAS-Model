@@ -4504,26 +4504,26 @@ use module_wrf_error
 ! Lower atmosphere loop
       do ig = 1, ng29
          do lay = 1, laytrop
-         ind0 = ((jp(lay)-1)*5+(jt(lay)-1))*nspa(29) + 1
-         ind1 = (jp(lay)*5+(jt1(lay)-1))*nspa(29) + 1
-         inds = indself(lay)
-         indf = indfor(lay)
-         tauray = colmol(lay) * rayl
+            ind0 = ((jp(lay)-1)*5+(jt(lay)-1))*nspa(29) + 1
+            ind1 = (jp(lay)*5+(jt1(lay)-1))*nspa(29) + 1
+            inds = indself(lay)
+            indf = indfor(lay)
+            tauray = colmol(lay) * rayl
 
-         taug(lay,ngs28+ig) = colh2o(lay) * &
-            ((fac00(lay) * absa(ind0,ig) + &
-              fac10(lay) * absa(ind0+1,ig) + &
-              fac01(lay) * absa(ind1,ig) + &
-              fac11(lay) * absa(ind1+1,ig)) + &
-              selffac(lay) * (selfref(inds,ig) + &
-              selffrac(lay) * &
-              (selfref(inds+1,ig) - selfref(inds,ig))) + &
-              forfac(lay) * (forref(indf,ig) + & 
-              forfrac(lay) * &
-              (forref(indf+1,ig) - forref(indf,ig)))) &
-              + colco2(lay) * absco2(ig) 
-   !            ssa(lay,ngs28+ig) = tauray/taug(lay,ngs28+ig)
-         taur(lay,ngs28+ig) = tauray
+            taug(lay,ngs28+ig) = colh2o(lay) * &
+               ((fac00(lay) * absa(ind0,ig) + &
+                 fac10(lay) * absa(ind0+1,ig) + &
+                 fac01(lay) * absa(ind1,ig) + &
+                 fac11(lay) * absa(ind1+1,ig)) + &
+                 selffac(lay) * (selfref(inds,ig) + &
+                 selffrac(lay) * &
+                 (selfref(inds+1,ig) - selfref(inds,ig))) + &
+                 forfac(lay) * (forref(indf,ig) + & 
+                 forfrac(lay) * &
+                 (forref(indf+1,ig) - forref(indf,ig)))) &
+                 + colco2(lay) * absco2(ig) 
+!            ssa(lay,ngs28+ig) = tauray/taug(lay,ngs28+ig)
+            taur(lay,ngs28+ig) = tauray
          enddo
       enddo
 
@@ -4532,21 +4532,21 @@ use module_wrf_error
 ! Upper atmosphere loop
       do ig = 1, ng29
          do lay = laytrop+1, nlayers
-         if (jp(lay-1) .lt. layreffr .and. jp(lay) .ge. layreffr) &
-            laysolfr = lay
-         ind0 = ((jp(lay)-13)*5+(jt(lay)-1))*nspb(29) + 1
-         ind1 = ((jp(lay)-12)*5+(jt1(lay)-1))*nspb(29) + 1
-         tauray = colmol(lay) * rayl
+            if (jp(lay-1) .lt. layreffr .and. jp(lay) .ge. layreffr) &
+               laysolfr = lay
+            ind0 = ((jp(lay)-13)*5+(jt(lay)-1))*nspb(29) + 1
+            ind1 = ((jp(lay)-12)*5+(jt1(lay)-1))*nspb(29) + 1
+            tauray = colmol(lay) * rayl
 
-         taug(lay,ngs28+ig) = colco2(lay) * &
-             (fac00(lay) * absb(ind0,ig) + &
-              fac10(lay) * absb(ind0+1,ig) + &
-              fac01(lay) * absb(ind1,ig) + &
-              fac11(lay) * absb(ind1+1,ig)) &  
-              + colh2o(lay) * absh2o(ig) 
-   !            ssa(lay,ngs28+ig) = tauray/taug(lay,ngs28+ig)
-         if (lay .eq. laysolfr) sfluxzen(ngs28+ig) = sfluxref(ig) 
-         taur(lay,ngs28+ig) = tauray
+            taug(lay,ngs28+ig) = colco2(lay) * &
+                (fac00(lay) * absb(ind0,ig) + &
+                 fac10(lay) * absb(ind0+1,ig) + &
+                 fac01(lay) * absb(ind1,ig) + &
+                 fac11(lay) * absb(ind1+1,ig)) &  
+                 + colh2o(lay) * absh2o(ig) 
+!            ssa(lay,ngs28+ig) = tauray/taug(lay,ngs28+ig)
+            if (lay .eq. laysolfr) sfluxzen(ngs28+ig) = sfluxref(ig) 
+            taur(lay,ngs28+ig) = tauray
          enddo
       enddo
 
@@ -5061,9 +5061,9 @@ use module_wrf_error
       real(kind=rb) :: sumk, sumf
 
 
-      do jn = 1,9
+      do jp = 1,13
          do jt = 1,5
-            do jp = 1,13
+            do jn = 1,9
                iprsm = 0
                do igc = 1,ngc(1)
                   sumk = 0.
@@ -5077,8 +5077,8 @@ use module_wrf_error
          enddo
       enddo
 
-      do jt = 1,5
-         do jp = 13,59
+      do jp = 13,59
+         do jt = 1,5
             iprsm = 0
             do igc = 1,ngc(1)
                sumk = 0.
@@ -5142,9 +5142,9 @@ use module_wrf_error
       real(kind=rb) :: sumk, sumf
 
 
-      do jn = 1,9
+      do jp = 1,13
          do jt = 1,5
-            do jp = 1,13
+            do jn = 1,9
                iprsm = 0
                do igc = 1,ngc(2)
                   sumk = 0.
@@ -5158,9 +5158,9 @@ use module_wrf_error
          enddo
       enddo
 
-      do jn = 1,5
+      do jp = 13,59
          do jt = 1,5
-            do jp = 13,59
+            do jn = 1,5
                iprsm = 0
                do igc = 1,ngc(2)
                   sumk = 0.
@@ -5227,9 +5227,9 @@ use module_wrf_error
       real(kind=rb) :: sumk, sumf
 
 
-      do jn = 1,9
+      do jp = 1,13
          do jt = 1,5
-            do jp = 1,13
+            do jn = 1,9
                iprsm = 0
                do igc = 1,ngc(3)
                   sumk = 0.
@@ -5243,8 +5243,8 @@ use module_wrf_error
          enddo
       enddo
 
-      do jt = 1,5
-         do jp = 13,59
+      do jp = 13,59
+         do jt = 1,5
             iprsm = 0
             do igc = 1,ngc(3)
                sumk = 0.
@@ -5310,9 +5310,9 @@ use module_wrf_error
       real(kind=rb) :: sumk, sumf
 
 
-      do jn = 1,9
+      do jp = 1,13
          do jt = 1,5
-            do jp = 1,13
+            do jn = 1,9
                iprsm = 0
                do igc = 1,ngc(4)
                   sumk = 0.
@@ -5326,8 +5326,8 @@ use module_wrf_error
          enddo
       enddo
 
-      do jt = 1,5
-         do jp = 13,59
+      do jp = 13,59
+         do jt = 1,5
             iprsm = 0
             do igc = 1,ngc(4)
                sumk = 0.
@@ -5393,8 +5393,8 @@ use module_wrf_error
       real(kind=rb) :: sumk, sumf1, sumf2
 
 
-      do jt = 1,5
-         do jp = 1,13
+      do jp = 1,13
+         do jt = 1,5
             iprsm = 0
             do igc = 1,ngc(5)
                sumk = 0.
@@ -5405,7 +5405,10 @@ use module_wrf_error
                ka(jt,jp,igc) = sumk
             enddo
          enddo
-         do jp = 13,59
+      enddo
+
+      do jp = 13,59
+         do jt = 1,5
             iprsm = 0
             do igc = 1,ngc(5)
                sumk = 0.
@@ -5472,9 +5475,9 @@ use module_wrf_error
       real(kind=rb) :: sumk, sumf
 
 
-      do jn = 1,9
+      do jp = 1,13
          do jt = 1,5
-            do jp = 1,13
+            do jn = 1,9
                iprsm = 0
                do igc = 1,ngc(6)
                   sumk = 0.
@@ -5488,9 +5491,9 @@ use module_wrf_error
          enddo
       enddo
 
-      do jn = 1,5
+      do jp = 13,59
          do jt = 1,5
-            do jp = 13,59
+            do jn = 1,5
                iprsm = 0
                do igc = 1,ngc(6)
                   sumk = 0.
@@ -5557,9 +5560,9 @@ use module_wrf_error
       real(kind=rb) :: sumk, sumf
 
 
-      do jn = 1,9
+      do jp = 1,13
          do jt = 1,5
-            do jp = 1,13
+            do jn = 1,9
                iprsm = 0
                do igc = 1,ngc(7)
                   sumk = 0.
@@ -5573,8 +5576,8 @@ use module_wrf_error
          enddo
       enddo
 
-      do jt = 1,5
-         do jp = 13,59
+      do jp = 13,59
+         do jt = 1,5
             iprsm = 0
             do igc = 1,ngc(7)
                sumk = 0.
@@ -5640,8 +5643,8 @@ use module_wrf_error
       real(kind=rb) :: sumk, sumf1, sumf2
 
 
-      do jt = 1,5
-         do jp = 1,13
+      do jp = 1,13
+         do jt = 1,5
             iprsm = 0
             do igc = 1,ngc(8)
                sumk = 0.
@@ -5710,9 +5713,9 @@ use module_wrf_error
       real(kind=rb) :: sumk, sumf1, sumf2, sumf3
 
 
-      do jn = 1,9
-         do jt = 1,5
-            do jp = 1,13
+      do jt = 1,5
+         do jp = 1,13
+            do jn = 1,9
                iprsm = 0
                do igc = 1,ngc(9)
                   sumk = 0.
@@ -5814,8 +5817,8 @@ use module_wrf_error
       real(kind=rb) :: sumk, sumf1, sumf2, sumf3, sumf4
 
 
-      do jt = 1,5
-         do jp = 1,13
+      do jp = 1,13
+         do jt = 1,5
             iprsm = 0
             do igc = 1,ngc(10)
                sumk = 0.
@@ -5894,8 +5897,8 @@ use module_wrf_error
       real(kind=rb) :: sumk, sumf1, sumf2
 
 
-      do jt = 1,5
-         do jp = 1,13
+      do jp = 1,13
+         do jt = 1,5
             iprsm = 0
             do igc = 1,ngc(12)
                sumk = 0.
@@ -5906,7 +5909,10 @@ use module_wrf_error
                ka(jt,jp,igc) = sumk
             enddo
          enddo
-         do jp = 13,59
+      enddo
+
+      do jp = 13,59
+         do jt = 1,5
             iprsm = 0
             do igc = 1,ngc(12)
                sumk = 0.
@@ -5949,9 +5955,9 @@ use module_wrf_error
       real(kind=rb) :: sumk, sumf
 
 
-      do jn = 1,9
+      do jp = 1,13
          do jt = 1,5
-            do jp = 1,13
+            do jn = 1,9
                iprsm = 0
                do igc = 1,ngc(13)
                   sumk = 0.
@@ -5965,9 +5971,9 @@ use module_wrf_error
          enddo
       enddo
 
-      do jn = 1,5
+      do jp = 13,59
          do jt = 1,5
-            do jp = 13,59
+            do jn = 1,5
                iprsm = 0
                do igc = 1,ngc(13)
                   sumk = 0.
@@ -6012,8 +6018,8 @@ use module_wrf_error
       real(kind=rb) :: sumk, sumf1, sumf2, sumf3
 
 
-      do jt = 1,5
-         do jp = 1,13
+      do jp = 1,13
+         do jt = 1,5
             iprsm = 0
             do igc = 1,ngc(14)
                sumk = 0.
@@ -6024,7 +6030,10 @@ use module_wrf_error
                ka(jt,jp,igc) = sumk
             enddo
          enddo
-         do jp = 13,59
+      enddo
+
+      do jp = 13,59
+         do jt = 1,5
             iprsm = 0
             do igc = 1,ngc(14)
                sumk = 0.
