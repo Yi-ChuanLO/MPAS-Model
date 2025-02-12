@@ -851,6 +851,7 @@
  type(mpas_pool_type),intent(inout):: diag_physics
 
 !local pointers:
+ integer,pointer:: cache_blocksize
  logical,pointer:: config_do_restart,config_frac_seaice
  character(len=StrKIND),pointer:: sfclayer_scheme
  real(kind=RKIND),dimension(:),pointer:: areaCell
@@ -861,7 +862,7 @@
 
 !CCPP-compliant flags:
  character(len=StrKIND):: errmsg
- integer:: errflg
+ integer:: errflg, ib, ie
 
 !-----------------------------------------------------------------------------------------------------------------
 !call mpas_log_write('')
@@ -874,6 +875,7 @@
  call mpas_pool_get_config(configs,'config_do_restart'     ,config_do_restart )
  call mpas_pool_get_config(configs,'config_frac_seaice'    ,config_frac_seaice)
  call mpas_pool_get_config(configs,'config_sfclayer_scheme',sfclayer_scheme   )
+ call mpas_pool_get_config(configs,'config_cache_blocksize',cache_blocksize   )
 
  call mpas_pool_get_array(mesh,'areaCell',areaCell)
 
@@ -950,34 +952,37 @@
 
     case("sf_monin_obukhov_rev")
        call mpas_timer_start('sf_monin_obukhov_rev')
-       call sfclayrev( &
-               p3d          = pres_hyd_p     , psfc        = psfc_p       , t3d            = t_p            , &
-               u3d          = u_p            , v3d         = v_p          , qv3d           = qv_p           , &
-               dz8w         = dz_p           , cp          = cp           , g              = gravity        , &
-               rovcp        = rcp            , R           = R_d          , xlv            = xlv            , &
-               chs          = chs_p          , chs2        = chs2_p       , cqs2           = cqs2_p         , &
-               cpm          = cpm_p          , znt         = znt_p        , ust            = ust_p          , &
-               pblh         = hpbl_p         , mavail      = mavail_p     , zol            = zol_p          , &
-               mol          = mol_p          , regime      = regime_p     , psim           = psim_p         , &
-               psih         = psih_p         , fm          = fm_p         , fh             = fh_p           , &
-               xland        = xland_p        , hfx         = hfx_p        , qfx            = qfx_p          , &
-               lh           = lh_p           , tsk         = tsk_p        , flhc           = flhc_p         , &
-               flqc         = flqc_p         , qgh         = qgh_p        , qsfc           = qsfc_p         , &
-               rmol         = rmol_p         , u10         = u10_p        , v10            = v10_p          , &
-               th2          = th2m_p         , t2          = t2m_p        , q2             = q2_p           , &
-               gz1oz0       = gz1oz0_p       , wspd        = wspd_p       , br             = br_p           , &
-               isfflx       = isfflx         , dx          = dx_p         , svp1           = svp1           , &
-               svp2         = svp2           , svp3        = svp3         , svpt0          = svpt0          , &
-               ep1          = ep_1           , ep2         = ep_2         , karman         = karman         , &
-               p1000mb      = P0             , lakemask    = lakemask_p   , ustm           = ustm_p         , &
-               ck           = ck_p           , cka         = cka_p        , cd             = cd_p           , &
-               cda          = cda_p          , isftcflx    = isftcflx     , iz0tlnd        = iz0tlnd        , &
-               shalwater_z0 = shalwater_flag , water_depth = waterdepth_p , scm_force_flux = scm_force_flux , &
+       do ib = its, ite, cache_blocksize
+          ie = min(ite,ib+cache_blocksize-1)
+          call sfclayrev( &
+               p3d          = pres_hyd_p(ib:ie, :, :)     , psfc        = psfc_p(ib:ie, :)          , t3d            = t_p(ib:ie, :, :)            , &
+               u3d          = u_p(ib:ie, :, :)            , v3d         = v_p(ib:ie, :, :)          , qv3d           = qv_p(ib:ie, :, :)           , &
+               dz8w         = dz_p(ib:ie, :, :)           , cp          = cp                        , g              = gravity                     , &
+               rovcp        = rcp                         , R           = R_d                       , xlv            = xlv                         , &
+               chs          = chs_p(ib:ie, :)             , chs2        = chs2_p(ib:ie, :)          , cqs2           = cqs2_p(ib:ie, :)            , &
+               cpm          = cpm_p(ib:ie, :)             , znt         = znt_p(ib:ie, :)           , ust            = ust_p(ib:ie, :)             , & 
+               pblh         = hpbl_p(ib:ie, :)            , mavail      = mavail_p(ib:ie, :)        , zol            = zol_p(ib:ie, :)             , &
+               mol          = mol_p(ib:ie, :)             , regime      = regime_p(ib:ie, :)        , psim           = psim_p(ib:ie, :)            , &
+               psih         = psih_p(ib:ie, :)            , fm          = fm_p(ib:ie, :)            , fh             = fh_p(ib:ie, :)           , &
+               xland        = xland_p(ib:ie, :)           , hfx         = hfx_p(ib:ie, :)           , qfx            = qfx_p(ib:ie, :)          , &
+               lh           = lh_p(ib:ie, :)              , tsk         = tsk_p(ib:ie, :)           , flhc           = flhc_p(ib:ie, :)         , &
+               flqc         = flqc_p(ib:ie, :)            , qgh         = qgh_p(ib:ie, :)           , qsfc           = qsfc_p(ib:ie, :)         , &
+               rmol         = rmol_p(ib:ie, :)            , u10         = u10_p(ib:ie, :)           , v10            = v10_p(ib:ie, :)          , &
+               th2          = th2m_p(ib:ie, :)            , t2          = t2m_p(ib:ie, :)           , q2             = q2_p(ib:ie, :)           , &
+               gz1oz0       = gz1oz0_p(ib:ie, :)          , wspd        = wspd_p(ib:ie, :)          , br             = br_p(ib:ie, :)           , &
+               isfflx       = isfflx                      , dx          = dx_p(ib:ie, :)            , svp1           = svp1                     , &
+               svp2         = svp2                        , svp3        = svp3                      , svpt0          = svpt0                    , &
+               ep1          = ep_1                        , ep2         = ep_2                      , karman         = karman                   , &
+               p1000mb      = P0                          , lakemask    = lakemask_p(ib:ie, :)      , ustm           = ustm_p(ib:ie, :)         , &
+               ck           = ck_p(ib:ie, :)              , cka         = cka_p(ib:ie, :)           , cd             = cd_p(ib:ie, :)           , &
+               cda          = cda_p(ib:ie, :)             , isftcflx    = isftcflx                  , iz0tlnd        = iz0tlnd                  , &
+               shalwater_z0 = shalwater_flag              , water_depth = waterdepth_p(ib:ie, :)    , scm_force_flux = scm_force_flux , &
                errmsg       = errmsg         , errflg      = errflg                                         , &
-               ids = ids , ide = ide , jds = jds , jde = jde , kds = kds , kde = kde                        , &
-               ims = ims , ime = ime , jms = jms , jme = jme , kms = kms , kme = kme                        , &
-               its = its , ite = ite , jts = jts , jte = jte , kts = kts , kte = kte                          &
+               ids = ib , ide = ie+1, jds = jds , jde = jde , kds = kds , kde = kde                        , &
+               ims = ib , ime = ie  , jms = jms , jme = jme , kms = kms , kme = kme                        , &
+               its = ib , ite = ie  , jts = jts , jte = jte , kts = kts , kte = kte                          &
                      )
+       enddo
 
        if(config_frac_seaice) then
           call sfclayrev( &

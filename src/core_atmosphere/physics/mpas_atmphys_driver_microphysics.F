@@ -339,7 +339,7 @@
  character(len=StrKIND),pointer:: microp_scheme
 
 !local variables and arrays:
- integer:: istep
+ integer:: istep, ib, ie
 
 !CCPP-compliant flags:
  character(len=StrKIND):: errmsg
@@ -438,29 +438,31 @@
 
     case ("mp_wsm6")
        call mpas_timer_start('mp_wsm6')
-       call wsm6( &
-                  th        = th_p        , q          = qv_p         , qc        = qc_p      , &
-                  qr        = qr_p        , qi         = qi_p         , qs        = qs_p      , &
-                  qg        = qg_p        , den        = rho_p        , pii       = pi_p      , &
-                  p         = pres_p      , delz       = dz_p         , delt      = dt_microp , &
+       do ib = its,ite,cache_blocksize
+          ie = min(ite,ib+cache_blocksize-1)
+          call wsm6( &
+                  th        = th_p(ib:ie, :, :)        , q          = qv_p(ib:ie, :, :)         , qc        = qc_p(ib:ie, :, :)      , &
+                  qr        = qr_p(ib:ie, :, :)        , qi         = qi_p(ib:ie, :, :)         , qs        = qs_p(ib:ie, :, :)      , &
+                  qg        = qg_p(ib:ie, :, :)        , den        = rho_p(ib:ie, :, :)        , pii       = pi_p(ib:ie, :, :)      , &
+                  p         = pres_p(ib:ie, :, :)      , delz       = dz_p(ib:ie, :, :)         , delt      = dt_microp , &
                   g         = gravity     , cpd        = cp           , cpv       = cpv       , &
                   rd        = R_d         , rv         = R_v          , t0c       = svpt0     , &
                   ep1       = ep_1        , ep2        = ep_2         , qmin      = epsilon   , &
                   xls       = xls         , xlv0       = xlv          , xlf0      = xlf       , &
                   den0      = rho_a       , denr       = rho_w        , cliq      = cliq      , &
-                  cice      = cice        , psat       = psat         , rain      = rainnc_p  , &
-                  rainncv   = rainncv_p   , snow       = snownc_p     , snowncv   = snowncv_p , &
-                  graupel   = graupelnc_p , graupelncv = graupelncv_p , sr        = sr_p      , &
-                  re_cloud  = recloud_p   , re_ice     = reice_p      , re_snow   = resnow_p  , &
+                  cice      = cice        , psat       = psat         , rain      = rainnc_p(ib:ie, :)  , &
+                  rainncv   = rainncv_p(ib:ie, :)   , snow       = snownc_p(ib:ie, :)     , snowncv   = snowncv_p(ib:ie, :) , &
+                  graupel   = graupelnc_p(ib:ie, :) , graupelncv = graupelncv_p(ib:ie, :) , sr        = sr_p(ib:ie, :)      , &
+                  re_cloud  = recloud_p(ib:ie, :, :)   , re_ice     = reice_p(ib:ie, :, :)      , re_snow   = resnow_p(ib:ie, :, :)  , &
                   has_reqc  = has_reqc    , has_reqi   = has_reqi     , has_reqs  = has_reqs  , &
                   re_qc_bg  = re_qc_bg    , re_qi_bg   = re_qi_bg     , re_qs_bg  = re_qs_bg  , &
                   re_qc_max = re_qc_max   , re_qi_max  = re_qi_max    , re_qs_max = re_qs_max , &
                   errmsg    = errmsg      , errflg     = errflg                               , &
-                  ids = ids , ide = ide , jds = jds , jde = jde , kds = kds , kde = kde       , &
-                  ims = ims , ime = ime , jms = jms , jme = jme , kms = kms , kme = kme       , &
-                  its = its , ite = ite , jts = jts , jte = jte , kts = kts , kte = kte       , &
-                  cache_blocksize = cache_blocksize                                             &
+                  ids = ib , ide = ie+1, jds = jds , jde = jde , kds = kds , kde = kde       , &
+                  ims = ib , ime = ie  , jms = jms , jme = jme , kms = kms , kme = kme       , &
+                  its = ib , ite = ie  , jts = jts , jte = jte , kts = kts , kte = kte         &
                )
+       enddo
        call mpas_timer_stop('mp_wsm6')
 
     case default

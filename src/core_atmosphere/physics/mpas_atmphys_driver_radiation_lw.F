@@ -814,11 +814,12 @@
  type(mpas_pool_type),intent(inout):: tend_physics
 
 !local pointers:
+ integer,pointer:: cache_blocksize
  logical,pointer:: config_o3climatology
  character(len=StrKIND),pointer:: radt_lw_scheme
 
 !local variables:
- integer:: o3input
+ integer:: o3input, ib, ie
  real(kind=RKIND):: radt,xtime_m
 
 !-----------------------------------------------------------------------------------------------------------------
@@ -826,6 +827,7 @@
 
  call mpas_pool_get_config(configs,'config_o3climatology' ,config_o3climatology)
  call mpas_pool_get_config(configs,'config_radt_lw_scheme',radt_lw_scheme      )
+ call mpas_pool_get_config(configs,'config_cache_blocksize',cache_blocksize    )
 
 !copy MPAS arrays to local arrays:
  call radiation_lw_from_MPAS(xtime_s,configs,mesh,state,time_lev,diag_physics,atm_input,sfc_input,its,ite)
@@ -837,27 +839,71 @@
        if(config_o3climatology) o3input = 2
 
        call mpas_timer_start('rrtmg_lwrad')
-       call rrtmg_lwrad( &
-            p3d        = pres_hyd_p    , p8w       = pres2_hyd_p , pi3d     = pi_p     , &
-            t3d        = t_p           , t8w       = t2_p        , dz8w     = dz_p     , &
-!           qv3d       = qv_p          , qc3d      = qc_p        , qi3d     = qi_p     , &
-!           qs3d       = qs_p          , cldfra3d  = cldfrac_p   , tsk      = tsk_p    , &
-            qv3d       = qvrad_p       , qc3d      = qcrad_p     , qi3d     = qirad_p  , &
-            qs3d       = qsrad_p       , cldfra3d  = cldfrac_p   , tsk      = tsk_p    , &
-            emiss      = sfc_emiss_p   , xland     = xland_p     , xice     = xice_p   , &
-            snow       = snow_p        , icloud    = icloud      , o3input  = o3input  , &
-            noznlevels = num_oznlevels , pin       = pin_p       , o3clim   = o3clim_p , &
-            glw        = glw_p         , olr       = olrtoa_p    , lwcf     = lwcf_p   , &
-            rthratenlw = rthratenlw_p  , has_reqc  = has_reqc    , has_reqi = has_reqi , &
-            has_reqs   = has_reqs      , re_cloud  = recloud_p   , re_ice   = reice_p  , &
-            re_snow    = resnow_p      , rre_cloud = rrecloud_p  , rre_ice  = rreice_p , &
-            rre_snow   = rresnow_p     , lwupt     = lwupt_p     , lwuptc   = lwuptc_p , &
-            lwdnt      = lwdnt_p       , lwdntc    = lwdntc_p    , lwupb    = lwupb_p  , &
-            lwupbc     = lwupbc_p      , lwdnb     = lwdnb_p     , lwdnbc   = lwdnbc_p , &
-            ids = ids , ide = ide , jds = jds , jde = jde , kds = kds , kde = kde ,      &
-            ims = ims , ime = ime , jms = jms , jme = jme , kms = kms , kme = kme ,      &
-            its = its , ite = ite , jts = jts , jte = jte , kts = kts , kte = kte        &
-                       )
+       do ib = its, ite, cache_blocksize
+           ie = min(ib+cache_blocksize-1,ite)
+           call rrtmg_lwrad( &
+           p3d        = pres_hyd_p(ib:ie, :, :)    , &! real, dimension(its:ite, kts:kte, jts:jte)
+           p8w        = pres2_hyd_p(ib:ie, :, :)   , &! real, dimension(its:ite, kts:kte, jts:jte)
+           pi3d       = pi_p(ib:ie, :, :)          , &! real, dimension(its:ite, kts:kte, jts:jte)
+           t3d        = t_p(ib:ie, :, :)           , &! real, dimension(its:ite, kts:kte, jts:jte)
+           t8w        = t2_p(ib:ie, :, :)          , &! real, dimension(its:ite, kts:kte, jts:jte)
+           dz8w       = dz_p(ib:ie, :, :)          , &! real, dimension(its:ite, kts:kte, jts:jte)
+           qv3d       = qvrad_p(ib:ie, :, :)       , &! real, dimension(its:ite, kts:kte, jts:jte)
+           qc3d       = qcrad_p(ib:ie, :, :)       , &! real, dimension(its:ite, kts:kte, jts:jte)
+           qi3d       = qirad_p(ib:ie, :, :)       , &! real, dimension(its:ite, kts:kte, jts:jte)
+           qs3d       = qsrad_p(ib:ie, :, :)       , &! real, dimension(its:ite, kts:kte, jts:jte)
+           cldfra3d   = cldfrac_p(ib:ie, :, :)     , &! real, dimension(its:ite, kts:kte, jts:jte)
+           tsk        = tsk_p(ib:ie, :)            , &! real, dimension(its:ite, jts:jte)
+           emiss      = sfc_emiss_p(ib:ie, :)      , &! real, dimension(its:ite, jts:jte)
+           xland      = xland_p(ib:ie, :)          , &! real, dimension(its:ite, jts:jte)
+           xice       = xice_p(ib:ie, :)           , &! real, dimension(its:ite, jts:jte)
+           snow       = snow_p(ib:ie, :)           , &! real, dimension(its:ite, jts:jte)
+           icloud     = icloud        , &! logical or integer flag, scalar
+           o3input    = o3input       , &! integer scalar
+           noznlevels = num_oznlevels , &! integer scalar
+           pin        = pin_p         , &! real, dimension(num_oznlevels)
+           o3clim     = o3clim_p(ib:ie, :, :)      , &! real, dimension(its:ite, num_oznlevels, jts:jte)
+           glw        = glw_p(ib:ie, :)            , &! real, dimension(its:ite, jts:jte)
+           olr        = olrtoa_p(ib:ie, :)         , &! real, dimension(its:ite, jts:jte)
+           lwcf       = lwcf_p(ib:ie, :)           , &! real, dimension(its:ite, jts:jte)
+           rthratenlw = rthratenlw_p(ib:ie, :, :)  , &! real, dimension(its:ite, kts:kte, jts:jte)
+           has_reqc   = has_reqc      , &! logical flag, scalar
+           has_reqi   = has_reqi      , &! logical flag, scalar
+           has_reqs   = has_reqs      , &! logical flag, scalar
+           re_cloud   = recloud_p(ib:ie, :, :)     , &! real, dimension(its:ite, kts:kte, jts:jte)
+           re_ice     = reice_p(ib:ie, :, :)       , &! real, dimension(its:ite, kts:kte, jts:jte)
+           re_snow    = resnow_p(ib:ie, :, :)      , &! real, dimension(its:ite, kts:kte, jts:jte)
+           rre_cloud  = rrecloud_p(ib:ie, :, :)    , &! real, dimension(its:ite, kts:kte, jts:jte)
+           rre_ice    = rreice_p(ib:ie, :, :)      , &! real, dimension(its:ite, kts:kte, jts:jte)
+           rre_snow   = rresnow_p(ib:ie, :, :)     , &! real, dimension(its:ite, kts:kte, jts:jte)
+           lwupt      = lwupt_p(ib:ie, :)          , &! real, dimension(its:ite, jts:jte)
+           lwuptc     = lwuptc_p(ib:ie, :)         , &! real, dimension(its:ite, jts:jte)
+           lwdnt      = lwdnt_p(ib:ie, :)          , &! real, dimension(its:ite, jts:jte)
+           lwdntc     = lwdntc_p(ib:ie, :)         , &! real, dimension(its:ite, jts:jte)
+           lwupb      = lwupb_p(ib:ie, :)          , &! real, dimension(its:ite, jts:jte)
+           lwupbc     = lwupbc_p(ib:ie, :)         , &! real, dimension(its:ite, jts:jte)
+           lwdnb      = lwdnb_p(ib:ie, :)          , &! real, dimension(its:ite, jts:jte)
+           lwdnbc     = lwdnbc_p(ib:ie, :)         , &! real, dimension(its:ite, jts:jte)
+           ids        = ib            , &! integer scalar
+           ide        = ie+1          , &! integer scalar
+           jds        = jds           , &! integer scalar
+           jde        = jde           , &! integer scalar
+           kds        = kds           , &! integer scalar
+           kde        = kde           , &! integer scalar
+           ims        = ib            , &! integer scalar
+           ime        = ie            , &! integer scalar
+           jms        = jms           , &! integer scalar
+           jme        = jme           , &! integer scalar
+           kms        = kms           , &! integer scalar
+           kme        = kme           , &! integer scalar
+           its        = ib            , &! integer scalar
+           ite        = ie            , &! integer scalar
+           jts        = jts           , &! integer scalar
+           jte        = jte           , &! integer scalar
+           kts        = kts           , &! integer scalar
+           kte        = kte             &! integer scalar
+              )
+       enddo
        call mpas_timer_stop('rrtmg_lwrad')
 
     case ("cam_lw")

@@ -421,13 +421,13 @@
 
 !local pointers:
  logical,pointer:: config_do_restart
- integer,pointer:: gfconv_closure_deep,gfconv_closure_shallow
+ integer,pointer:: gfconv_closure_deep,gfconv_closure_shallow, cache_blocksize
  character(len=StrKIND),pointer:: convection_scheme
  real(kind=RKIND),pointer:: len_disp
 
 !variables specific to Kain_Fritsch parameterization:
  logical:: warm_rain,adapt_step_flag
- integer:: ktau
+ integer:: ktau, ib, ie
  real(kind=RKIND):: curr_secs
  real(kind=RKIND):: cudt
  real(kind=RKIND):: cudtacttime
@@ -449,6 +449,7 @@
  call mpas_pool_get_config(configs,'config_len_disp'         ,len_disp         )
  call mpas_pool_get_config(configs,'config_do_restart'       ,config_do_restart)
  call mpas_pool_get_config(configs,'config_convection_scheme',convection_scheme)
+ call mpas_pool_get_config(configs,'config_cache_blocksize'  ,cache_blocksize  )
 
 !initialize instantaneous precipitation, and copy convective tendencies from the dynamics to
 !the physics grid:
@@ -475,36 +476,41 @@
 
     case ("cu_grell_freitas")
        call mpas_timer_start('Grell-Freitas')
-       call cu_grell_freitas( &
-             itimestep       = itimestep              , dt            = dt_dyn          , &
-             dxCell          = dx_p                   , areaCell      = area_p          , &
-             u               = u_p                    , v             = v_p             , &
-             w               = w_p                    , t             = t_p             , &
-             q               = qv_p                   , rho           = rho_p           , &
-             p               = pres_hyd_p             , pi            = pi_p            , &
-             p8w             = pres2_hyd_p            , dz8w          = dz_p            , &
-             ht              = ht_p                   , xland         = xland_p         , &
-             gsw             = gsw_p                  , xlv           = xlv             , &
-             cp              = cp                     , g             = gravity         , &
-             r_v             = R_v                    , hfx           = hfx_p           , &
-             qfx             = qfx_p                  , rthblten      = rthblten_p      , &
-             rqvblten        = rqvblten_p             , rthften       = rthdynten_p     , &
-             rqvften         = rqvdynten_p            , rthraten      = rthraten_p      , &
-             kpbl            = kpbl_p                 , raincv        = raincv_p        , &
-             pratec          = pratec_p               , htop          = cutop_p         , &
-             hbot            = cubot_p                , k22_shallow   = k22_shallow_p   , & 
-             kbcon_shallow   = kbcon_shallow_p        , ktop_shallow  = ktop_shallow_p  , & 
-             xmb_total       = xmb_total_p            , xmb_shallow   = xmb_shallow_p   , &
-             gdc             = qccu_p                 , gdc2          = qicu_p          , &
-             rthcuten        = rthcuten_p             , rqvcuten      = rqvcuten_p      , & 
-             rqccuten        = rqccuten_p             , rqicuten      = rqicuten_p      , &
+       !do ib = its, ite, cache_blocksize
+       !   ie = min(ib+cache_blocksize-1,ite)
+       ib = its
+       ie = ite
+          call cu_grell_freitas( &
+             itimestep       = itimestep                           , dt            = dt_dyn                       , &
+             dxCell          = dx_p(ib:ie, :)                      , areaCell      = area_p(ib:ie, :)             , &
+             u               = u_p(ib:ie, :, :)                    , v             = v_p(ib:ie, :, :)             , &
+             w               = w_p(ib:ie, :, :)                    , t             = t_p(ib:ie, :, :)             , &
+             q               = qv_p(ib:ie, :, :)                   , rho           = rho_p(ib:ie, :, :)           , &
+             p               = pres_hyd_p(ib:ie, :, :)             , pi            = pi_p(ib:ie, :, :)            , &
+             p8w             = pres2_hyd_p(ib:ie, :, :)            , dz8w          = dz_p(ib:ie, :, :)            , &
+             ht              = ht_p(ib:ie, :)                      , xland         = xland_p(ib:ie, :)            , &
+             gsw             = gsw_p(ib:ie, :)                     , xlv           = xlv                          , &
+             cp              = cp                                  , g             = gravity                      , &
+             r_v             = R_v                                 , hfx           = hfx_p(ib:ie, :)              , &
+             qfx             = qfx_p(ib:ie, :)                     , rthblten      = rthblten_p(ib:ie, :, :)      , &
+             rqvblten        = rqvblten_p(ib:ie, :, :)             , rthften       = rthdynten_p(ib:ie, :, :)     , &
+             rqvften         = rqvdynten_p(ib:ie, :, :)            , rthraten      = rthraten_p(ib:ie, :, :)      , &
+             kpbl            = kpbl_p(ib:ie, :)                    , raincv        = raincv_p(ib:ie, :)           , &
+             pratec          = pratec_p(ib:ie, :)                  , htop          = cutop_p(ib:ie, :)            , &
+             hbot            = cubot_p(ib:ie, :)                   , k22_shallow   = k22_shallow_p(ib:ie, :)      , & 
+             kbcon_shallow   = kbcon_shallow_p(ib:ie, :)           , ktop_shallow  = ktop_shallow_p(ib:ie, :)     , & 
+             xmb_total       = xmb_total_p(ib:ie, :)               , xmb_shallow   = xmb_shallow_p(ib:ie, :)      , &
+             gdc             = qccu_p(ib:ie, :, :)                 , gdc2          = qicu_p(ib:ie, :, :)          , &
+             rthcuten        = rthcuten_p(ib:ie, :, :)             , rqvcuten      = rqvcuten_p(ib:ie, :, :)      , & 
+             rqccuten        = rqccuten_p(ib:ie, :, :)             , rqicuten      = rqicuten_p(ib:ie, :, :)      , &
              ichoice_deep    = gfconv_closure_deep                                      , &
              ichoice_shallow = gfconv_closure_shallow                                   , &
              ishallow_g3     = ishallow                                                 , &
-             ids = ids , ide = ide , jds = jds , jde = jde , kds = kds , kde = kde      , &
-             ims = ims , ime = ime , jms = jms , jme = jme , kms = kds , kme = kme      , &
-             its = its , ite = ite , jts = jts , jte = jte , kts = kts , kte = kte        &
-                            )
+             ids = ib  , ide = ie+1, jds = jds , jde = jde , kds = kds , kde = kde      , &
+             ims = ib  , ime = ie  , jms = jms , jme = jme , kms = kds , kme = kme      , &
+             its = ib  , ite = ie  , jts = jts , jte = jte , kts = kts , kte = kte        &
+            )
+       !enddo
        call mpas_timer_stop('Grell-Freitas')
 
     case ("cu_kain_fritsch")
@@ -573,32 +579,37 @@
 
     case("cu_ntiedtke")
        call mpas_timer_start('cu_ntiedtke')
-       call cu_ntiedtke_driver( &
-             pcps     = pres_hyd_p , p8w         = pres2_hyd_p ,                     &
-             t3d      = t_p        , dz8w        = dz_p        ,                     &
-             dt       = dt_dyn     , itimestep   = initflag    ,                     &
-             stepcu   = n_cu       , raincv      = raincv_p    ,                     &
-             pratec   = pratec_p   , qfx         = qfx_p       ,                     &
-             hfx      = hfx_p      , xland       = xland_p     ,                     &
-             dx       = dx_p       , u3d         = u_p         ,                     &
-             v3d      = v_p        , w           = w_p         ,                     &
-             qv3d     = qv_p       , qc3d        = qc_p        ,                     &
-             qi3d     = qi_p       , pi3d        = pi_p        ,                     &
-             rho3d    = rho_p      , qvften      = rqvften_p   ,                     &
-             thften   = rthften_p  , cu_act_flag = cu_act_flag ,                     &
-             f_qc     = f_qc       , f_qi        = f_qi        ,                     &
-             rthcuten = rthcuten_p , rqvcuten    = rqvcuten_p  ,                     &
-             rqccuten = rqccuten_p , rqicuten    = rqicuten_p  ,                     &
-             rucuten  = rucuten_p  , rvcuten     = rvcuten_p   ,                     &
+       !do ib = its, ite, cache_blocksize
+       !   ie = min(ib+cache_blocksize-1,ite)
+       ib = its
+       ie = ite
+          call cu_ntiedtke_driver( &
+             pcps     = pres_hyd_p(ib:ie, :, :) , p8w         = pres2_hyd_p(ib:ie, :, :)   ,                     &
+             t3d      = t_p(ib:ie, :, :)        , dz8w        = dz_p(ib:ie, :, :)          ,                     &
+             dt       = dt_dyn                  , itimestep   = initflag    ,                                    &
+             stepcu   = n_cu                    , raincv      = raincv_p    ,                                    &
+             pratec   = pratec_p(ib:ie, :)      , qfx         = qfx_p(ib:ie, :)          ,                     &
+             hfx      = hfx_p(ib:ie, :)         , xland       = xland_p(ib:ie, :)        ,                     &
+             dx       = dx_p(ib:ie, :)          , u3d         = u_p(ib:ie, :, :)         ,                     &
+             v3d      = v_p(ib:ie, :, :)        , w           = w_p(ib:ie, :, :)         ,                     &
+             qv3d     = qv_p(ib:ie, :, :)       , qc3d        = qc_p(ib:ie, :, :)        ,                     &
+             qi3d     = qi_p(ib:ie, :, :)       , pi3d        = pi_p(ib:ie, :, :)        ,                     &
+             rho3d    = rho_p(ib:ie, :, :)      , qvften      = rqvften_p(ib:ie, :, :)   ,                     &
+             thften   = rthften_p(ib:ie, :, :)  , cu_act_flag = cu_act_flag ,                     &
+             f_qc     = f_qc                    , f_qi        = f_qi        ,                     &
+             rthcuten = rthcuten_p(ib:ie, :, :) , rqvcuten    = rqvcuten_p(ib:ie, :, :)    ,                     &
+             rqccuten = rqccuten_p(ib:ie, :, :) , rqicuten    = rqicuten_p(ib:ie, :, :)    ,                     &
+             rucuten  = rucuten_p(ib:ie, :, :)  , rvcuten     = rvcuten_p(ib:ie, :, :)     ,                     &
              grav     = gravity    , xlf         = xlf         ,                     &
              xls      = xls        , xlv         = xlv         ,                     &
              rd       = R_d        , rv          = R_v         ,                     &
              cp       = cp         ,                                                 &
              errmsg   = errmsg     , errflg      = errflg      ,                     &
-             ids = ids , ide = ide , jds = jds , jde = jde , kds = kds , kde = kde , &
-             ims = ims , ime = ime , jms = jms , jme = jme , kms = kds , kme = kme , &
-             its = its , ite = ite , jts = jts , jte = jte , kts = kts , kte = kte   &
+             ids = ib  , ide = ie+1, jds = jds , jde = jde , kds = kds , kde = kde , &
+             ims = ib  , ime = ie  , jms = jms , jme = jme , kms = kds , kme = kme , &
+             its = ib  , ite = ie  , jts = jts , jte = jte , kts = kts , kte = kte   &
                               )
+       !enddo
        call mpas_timer_stop('cu_ntiedtke')
 
     case default

@@ -26,7 +26,6 @@
                  ids,ide,jds,jde,kds,kde,                         &
                  ims,ime,jms,jme,kms,kme,                         &
                  its,ite,jts,jte,kts,kte,                         &
-                 cache_blocksize,                                 &
                  errmsg,errflg                                    &
 #if(WRF_CHEM == 1)
                  ,wetscav_on,evapprod,rainprod                    &
@@ -39,8 +38,7 @@
 
  integer,intent(in):: ids,ide,jds,jde,kds,kde, &
                       ims,ime,jms,jme,kms,kme, &
-                      its,ite,jts,jte,kts,kte, &
-                      cache_blocksize
+                      its,ite,jts,jte,kts,kte
 
  integer,intent(in):: has_reqc,has_reqi,has_reqs
  integer,intent(in),optional:: do_radar_ref
@@ -153,8 +151,7 @@
                  xlf0=xlf0,den0=den0,denr=denr,cliq=cliq,cice=cice,psat=psat,     &
                  rain=rain_hv,rainncv=rainncv_hv,sr=sr_hv,snow=snow_hv,           &
                  snowncv=snowncv_hv,graupel=graupel_hv,graupelncv=graupelncv_hv,  &
-                 its=its,ite=ite,kts=kts,kte=kte,errmsg=errmsg,errflg=errflg,     &
-                 cache_blocksize=cache_blocksize                                  &
+                 its=its,ite=ite,kts=kts,kte=kte,errmsg=errmsg,errflg=errflg      &
 #if(WRF_CHEM == 1)
                  ,rainprod2d=rainprod_hv,evapprod2d=evapprodhv                    &
 #endif
@@ -225,7 +222,7 @@
 
      call  mp_wsm6_effectRad_run(do_microp_re,t_hv,qc_hv,qi_hv,qs_hv,den_hv,qmin,t0c, &
                    re_qc_bg,re_qi_bg,re_qs_bg,re_qc_max,re_qi_max,re_qs_max,re_qc_hv, &
-                   re_qi_hv,re_qs_hv,its,ite,kts,kte,errmsg,errflg,cache_blocksize)
+                   re_qi_hv,re_qs_hv,its,ite,kts,kte,errmsg,errflg)
 
      do k = kts,kte
         do i = its,ite

@@ -770,6 +770,7 @@
 
  character(len=StrKIND),pointer:: pbl_scheme
 
+ integer,pointer:: cache_blocksize
  integer,pointer:: bl_mynn_cloudpdf,    &
                    bl_mynn_mixlength,   &
                    bl_mynn_stfunc,      &
@@ -790,7 +791,7 @@
 
 !local variables:
  integer:: initflag
- integer:: i,k,j
+ integer:: i,k,j,ib,ie
 
 !CCPP-compliant flags:
  character(len=StrKIND):: errmsg
@@ -807,6 +808,7 @@
  call mpas_pool_get_config(configs,'config_do_DAcycling',config_do_DAcycling)
  call mpas_pool_get_config(configs,'config_do_restart'  ,config_do_restart  )
  call mpas_pool_get_config(configs,'config_pbl_scheme'  ,pbl_scheme         )
+ call mpas_pool_get_config(configs,'config_cache_blocksize',cache_blocksize)
 
 !copy MPAS arrays to local arrays:
  call pbl_from_MPAS(configs,mesh,sfc_input,diag_physics,tend_physics,its,ite)
@@ -818,31 +820,34 @@
 
     case("bl_ysu")
        call mpas_timer_start('bl_ysu')
-       call ysu ( &
-                 p3d      = pres_hyd_p , p3di     = pres2_hyd_p , psfc     = psfc_p     , &
-                 t3d      = t_p        , dz8w     = dz_p        , pi3d     = pi_p       , &
-                 u3d      = u_p        , v3d      = v_p         , qv3d     = qv_p       , &
-                 qc3d     = qc_p       , qi3d     = qi_p        , rublten  = rublten_p  , &
-                 rvblten  = rvblten_p  , rthblten = rthblten_p  , rqvblten = rqvblten_p , &
-                 rqcblten = rqcblten_p , rqiblten = rqiblten_p  , flag_qc  = f_qc       , &
-                 flag_qi  = f_qi       , cp       = cp          , g        = gravity    , &
-                 rovcp    = rcp        , rd       = R_d         , rovg     = rdg        , & 
-                 ep1      = ep_1       , ep2      = ep_2        , karman   = karman     , &
-                 xlv      = xlv        , rv       = R_v         , znt      = znt_p      , &
-                 ust      = ust_p      , hpbl     = hpbl_p      , psim     = psim_p     , &
-                 psih     = psih_p     , xland    = xland_p     , hfx      = hfx_p      , &
-                 qfx      = qfx_p      , wspd     = wspd_p      , br       = br_p       , &
-                 dt       = dt_pbl     , kpbl2d   = kpbl_p      , exch_h   = kzh_p      , &
-                 exch_m   = kzm_p      , wstar    = wstar_p     , delta    = delta_p    , &
-                 uoce     = uoce_p     , voce     = voce_p      , rthraten = rthraten_p , &
-                 u10      = u10_p      , v10      = v10_p       , ctopo    = ctopo_p    , &
-                 ctopo2   = ctopo2_p   , flag_bep = flag_bep    , idiff    = idiff      , &
+       do ib = its, ite, cache_blocksize
+         ie = min(ib+cache_blocksize-1,ite)
+         call ysu ( &
+                 p3d      = pres_hyd_p(ib:ie, :, :) , p3di     = pres2_hyd_p(ib:ie, :, :) , psfc     = psfc_p(ib:ie, :)        , &
+                 t3d      = t_p(ib:ie, :, :)        , dz8w     = dz_p(ib:ie, :, :)        , pi3d     = pi_p(ib:ie, :, :)       , &
+                 u3d      = u_p(ib:ie, :, :)        , v3d      = v_p(ib:ie, :, :)         , qv3d     = qv_p(ib:ie, :, :)       , &
+                 qc3d     = qc_p(ib:ie, :, :)       , qi3d     = qi_p(ib:ie, :, :)        , rublten  = rublten_p(ib:ie, :, :)  , &
+                 rvblten  = rvblten_p(ib:ie, :, :)  , rthblten = rthblten_p(ib:ie, :, :)  , rqvblten = rqvblten_p(ib:ie, :, :) , &
+                 rqcblten = rqcblten_p(ib:ie, :, :) , rqiblten = rqiblten_p(ib:ie, :, :)  , flag_qc  = f_qc       , &
+                 flag_qi  = f_qi                 , cp       = cp                    , g        = gravity    , &
+                 rovcp    = rcp                  , rd       = R_d                   , rovg     = rdg        , & 
+                 ep1      = ep_1                 , ep2      = ep_2                  , karman   = karman     , &
+                 xlv      = xlv                  , rv       = R_v                   , znt      = znt_p(ib:ie, :)      , &
+                 ust      = ust_p(ib:ie, :)      , hpbl     = hpbl_p(ib:ie, :)      , psim     = psim_p(ib:ie, :)     , &
+                 psih     = psih_p(ib:ie, :)     , xland    = xland_p(ib:ie, :)     , hfx      = hfx_p(ib:ie, :)      , &
+                 qfx      = qfx_p(ib:ie, :)      , wspd     = wspd_p(ib:ie, :)      , br       = br_p(ib:ie, :)       , &
+                 dt       = dt_pbl               , kpbl2d   = kpbl_p(ib:ie, :)      , exch_h   = kzh_p(ib:ie, :, :)   , &
+                 exch_m   = kzm_p(ib:ie, :, :)   , wstar    = wstar_p(ib:ie, :)     , delta    = delta_p(ib:ie, :)    , &
+                 uoce     = uoce_p(ib:ie, :)     , voce     = voce_p(ib:ie, :)      , rthraten = rthraten_p(ib:ie, :, :) , &
+                 u10      = u10_p(ib:ie, :)      , v10      = v10_p(ib:ie, :)       , ctopo    = ctopo_p(ib:ie, :)    , &
+                 ctopo2   = ctopo2_p(ib:ie, :)   , flag_bep = flag_bep    , idiff    = idiff      , &
                  ysu_topdown_pblmix = ysu_pblmix ,                                        &
                  errmsg   = errmsg     , errflg   = errflg      ,                         &
-                 ids = ids , ide = ide , jds = jds , jde = jde , kds = kds , kde = kde  , &
-                 ims = ims , ime = ime , jms = jms , jme = jme , kms = kms , kme = kme  , &
-                 its = its , ite = ite , jts = jts , jte = jte , kts = kts , kte = kte    &
+                 ids = ib  , ide = ie+1, jds = jds , jde = jde , kds = kds , kde = kde  , &
+                 ims = ib  , ime = ie  , jms = jms , jme = jme , kms = kms , kme = kme  , &
+                 its = ib  , ite = ie  , jts = jts , jte = jte , kts = kts , kte = kte    &
                 )
+       enddo
        call mpas_timer_stop('bl_ysu')
 
     case("bl_mynn")
